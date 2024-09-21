@@ -1,0 +1,89 @@
+# Ignore Mac system files
+.DS_Store
+
+# Ignore Linux system file
+.swp
+
+# Ignore Windows thumbnail files
+Thumbs.db
+
+# Ignore logs and temp files
+/logs/*
+/tmp/*
+/app/tmp/*
+/app/logs/*
+!logs/.gitkeep
+!tmp/.gitkeep
+
+# Ignore CakePHP core directories/files except for custom plugins
+/lib/Cake/*
+/app/Config/database.php
+/app/Console/*
+/app/Lib/*
+/app/Locale/*
+/app/Model/*
+/app/View/*
+/app/Test/*
+/app/Vendor/*
+/app/Plugin/*
+!/app/Plugin/BoostCake/*
+!/app/Plugin/Webzash/*
+
+# Ignore webroot files except custom uploads
+/app/webroot/*
+!/app/webroot/uploads/
+/app/webroot/cache/*
+
+# Ignore Composer dependencies
+/vendor/*
+/composer.lock
+
+# Ignore PHPUnit test results
+/tests/*.xml
+/tests/*.log
+/tests/coverage/
+
+# Ignore node_modules (if JavaScript is used)
+node_modules/
+
+# Ignore environment and configuration files
+.env
+.env.local
+.env.*.local
+
+# Ignore Docker-related files
+docker-compose.override.yml
+docker-compose.yml
+Dockerfile
+/docker-sync.yml
+/.docker/
+
+# Ignore IDE specific files (JetBrains, VSCode, Sublime, etc.)
+.idea/
+*.im
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Ignore editor swap files and backups
+*.swp
+*.bak
+*.orig
+*.save
+*.tmp
+
+# Ignore image assets, unless they're part of the project
+*.png
+*.jpg
+*.jpeg
+*.gif
+
+# Ignore custom uploads or user-generated content
+/app/webroot/uploads/*
+!app/webroot/uploads/.gitkeep
+
+# Ignore build files
+/build.xml
+/build.properties
+
+app/lib/Cake

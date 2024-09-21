@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  zash:
+    build: .
+    container_name: zash
+    restart: on-failure:5
+    volumes:
+      - ./:/var/www/html
+      - .app/apache-config/default.conf:/etc/apache2/sites-available/000-default.conf:ro
+    ports:
+      - "5090:80"
+    depends_on:
+      - zash_db
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/html/app/webroot
+
+  zash_db:
+    image: mysql:5.7
+    container_name: zash_db
+    restart: on-failure:5
+    environment:
+      MYSQL_DATABASE: webzash
+      MYSQL_USER: zashuser
+      MYSQL_PASSWORD: wwaabbiiyy3f
+      MYSQL_ROOT_PASSWORD: roomba33a
+    ports:
+      - "3306:80"
+    volumes:
+      - zash_db_data:/var/lib/mysql
+
+volumes:
+  zash_db_data:
+
+
