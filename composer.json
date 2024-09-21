@@ -1,0 +1,12 @@
+{
+    "name": "root/html",
+    "authors": [
+        {
+            "name": "dave",
+            "email": "daveemail1@protonmail.com"
+        }
+    ],
+    "require": {
+        "asgrim/ofxparser": "^1.2"
+    }
+}

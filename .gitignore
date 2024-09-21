@@ -87,3 +87,5 @@ Dockerfile
 /build.properties
 
 app/lib/Cake
+
+!app/webroot/index.php
