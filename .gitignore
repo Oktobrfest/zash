@@ -41,6 +41,7 @@ Thumbs.db
 /app/Test/*
 /app/Vendor/*
 !/app/Plugin/BoostCake/*
+!/app/Plugin/Webzash/**
 
 # Ignore Composer dependencies
 /vendor/*
