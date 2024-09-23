@@ -11,8 +11,11 @@ class OfxController extends WebzashAppController
 	public $uses = array('Webzash.LedgerKeyword', 'Webzash.Entry', 'Webzash.Group', 'Webzash.Ledger',
 		'Webzash.Entrytype', 'Webzash.Entryitem', 'Webzash.Tag', 'Webzash.Log');
 
-
-	// Action to display upload form and process the uploaded OFX file
+	/**
+	 * Action to display upload form and process the uploaded OFX file
+	 *
+	 * @return void
+	 */
 	public function upload()
 	{
 		if ($this->request->is('post')) {
@@ -49,12 +52,6 @@ class OfxController extends WebzashAppController
 		}
 	}
 
-	//Need this datatype to go into curEntryItems:	(all strings) - Will need to map bank act somehow eventurally
-	//$curEntryitems[0]["ledger_id"] = "1"
-	//$curEntryitems[0]["dc"]
-	//$curEntryitems[0]["dr_amount"]
-	//$curEntryitems[0]["cr_amount"]
-
 	/**
 	 * @param $transactions
 	 * @param $bank_account_number
@@ -69,9 +66,6 @@ class OfxController extends WebzashAppController
 			if (!$bank_account_ledger_id) {
 				$bank_account_ledger_id = "1";
 			}
-
-			//  logic to figure out if it's a Debit or Credit!!
-			// NEED TO MATCH ENTRYTYPE: "payment",
 			//Depending on Debit or Credit it'll be 'payment' or 'receive(or something)''
 			switch ($transaction->type) {
 				case  'DEBIT':
@@ -83,17 +77,12 @@ class OfxController extends WebzashAppController
 					$debit_or_credit = 'C';
 					$dr_amount = 0.00;
 					$cr_amount = number_format(abs($transaction->amount), 2, '.', '');
-				// debit_or_credit helps determine next part: Empty is "" not null or 0 (But I did it alternatively anyways)
-				//	$dr_amount = "";
-				//	$cr_amount = abs($transaction->amount);
 					break;
 				default:
 					$entrytypeLabel = 'receipt';
 					$debit_or_credit = 'D';
 					$dr_amount = number_format(abs($transaction->amount), 2, '.', '');
 					$cr_amount = 0.00;
-					//	$dr_amount = abs($transaction->amount);
-					//	$cr_amount = "";
 					break;
 			}
 
@@ -118,7 +107,6 @@ class OfxController extends WebzashAppController
 	    	// BALANCING TRANSACTION- (used to have ledger_id (string), but got rid of it. see if it works still!
 			$transactionAmount = max($dr_amount, $cr_amount);
 
-
 			$opposite_dc = ($debit_or_credit == 'D') ? 'C' : 'D';
 			$curEntryitems[1] = array(
 				"ledger_id" => $this->setBalancingLedgerId($entrydata['Entry']['narration'], $transactionAmount, $entrytypeLabel, $debit_or_credit, $keyword = 'UNALLOCATED'),
@@ -127,8 +115,6 @@ class OfxController extends WebzashAppController
 				"cr_amount" => $dr_amount
 			);
 
-			// DONT THINK I NEED THIS?
-			//$this->set('curEntryitems', $curEntryitems);
 			$dc_valid = $this->validate_ledger_restrictions($curEntryitems, $entrytype);
 			if (!$dc_valid) {
 				return false;
@@ -139,8 +125,6 @@ class OfxController extends WebzashAppController
 				return false;
 			}
 
-			// THIS IS SORTA REDUNDANT HERE!
-			/* Add item to entryitemdata array if everything is ok */
 			$entryitemdata = array();
 			foreach ($curEntryitems as $row => $entryitem) {
 				if ($entryitem['ledger_id'] <= 0) {
@@ -331,56 +315,10 @@ class OfxController extends WebzashAppController
 		return true;
 	}
 
-
-// MOVED TO STATIC ON LEDGERKEYWORDS
-//	private function getLedgerIdByLedgerKeywordsMapping($narration, $transactionAmount = null, $transactionType = null, $debit_or_credit = null) {
-//		// Fetch all keyword mappings ordered by priority descending
-//		$ledgerKeywords = $this->LedgerKeyword->find('all', array(
-//			'order' => array('LedgerKeyword.priority' => 'DESC')
-//		));
-//
-//		foreach ($ledgerKeywords as $mapping) {
-//			$keyword = $mapping['LedgerKeyword']['keyword'];
-//			$amountCondition = $mapping['LedgerKeyword']['amount'];
-//			$typeCondition = $mapping['LedgerKeyword']['transaction_type'];
-//
-//			// Check if keyword is found in narration (case-insensitive)
-//			if (stripos($narration, $keyword) !== false) {
-//
-//				// Check optional amount condition (if set) for greater, less, or equal
-//				if ($amountCondition !== null && $transactionAmount !== null) {
-//					if ($transactionAmount < $amountCondition) {
-//						continue; // Skip if the amount is less than expected
-//					}
-//				}
-//
-//				// Check optional transaction type condition if set
-//				if ($typeCondition !== null && $transactionType !== null) {
-//					if (strcasecmp($transactionType, $typeCondition) !== 0) {
-//						continue; // Skip if the transaction type doesn't match
-//					}
-//				}
-//
-//				// Check optional debit_or_credit condition if set
-//				if ($mapping['LedgerKeyword']['debit_or_credit'] !== null && $debit_or_credit !== null) {
-//					if (strcasecmp($mapping['LedgerKeyword']['debit_or_credit'], $debit_or_credit) !== 0) {
-//						continue; // Skip if debit_or_credit doesn't match
-//					}
-//				}
-//
-//				// All conditions match, return the ledger_id
-//				return $mapping['LedgerKeyword']['ledger_id'];
-//			}
-//		}
-//
-//		// No matching keyword found
-//		return null;
-//	}
-
-
-
-
-
+	/**
+	 * @param $keyword
+	 * @return mixed
+	 */
 	public function setDefaultBalancingLedgerId($keyword = 'UNALLOCATED') {
 		$ledger_id = $this->Ledger->findLedgerIdByNameKeyword($keyword);
 		if (!$ledger_id) {
@@ -390,9 +328,16 @@ class OfxController extends WebzashAppController
 			return $ledger_id;
 	}
 
+	/**
+	 * @param $narration
+	 * @param $transactionAmount
+	 * @param $transactionType
+	 * @param $debit_or_credit
+	 * @param $keyword
+	 * @return false
+	 */
 	public function setBalancingLedgerId($narration, $transactionAmount = null, $transactionType = null, $debit_or_credit = null, $keyword = 'UNALLOCATED') {
 		// Determine ledger_id based on narration
-//		$balancing_entry_ledger_id = $this->getLedgerIdByLedgerKeywordsMapping($narration, $transactionAmount = null, $transactionType = null);
 		$balancing_entry_ledger_id = $this->LedgerKeyword->getLedgerIdByLedgerKeywordsMapping($narration, $transactionAmount = null, $transactionType = null, $debit_or_credit = null);
 
 		if (!$balancing_entry_ledger_id) {
@@ -409,54 +354,4 @@ class OfxController extends WebzashAppController
 		}
 		return $balancing_entry_ledger_id;
 	}
-
-//
-//
-//// In Controller/OfxController.php
-//
-//public function upload($transactions) {
-//	// Existing code to handle file upload and parsing...
-//
-//	foreach ($transactions as $transaction) {
-//		$transactionData = [
-//			'type' => $transaction->type,
-//			'amount' => $transaction->amount,
-//			'memo' => $transaction->memo,
-//			'name' => $transaction->name,
-//			'date' => $transaction->date->format('Y-m-d'),
-//		];
-//
-//		// Check for duplicates
-//		if ($this->Entry->isDuplicate($transactionData)) {
-//			continue; // Skip this transaction
-//		}
-//
-//		// Prepare data for saving
-//		$entryData = [
-//			'Entry' => [
-//				'entrytype_id' => $this->determineEntryType($transactionData['type']),
-//				'date' => $transactionData['date'],
-//				'narration' => $transactionData['memo'],
-//				// Add other necessary fields...
-//			],
-//		];
-//
-//		$entryItemsData = [
-//			[
-//				'dc' => $this->determineDC($transactionData['type']),
-//				'ledger_id' => $this->determineLedgerId($transactionData),
-//				'amount' => $transactionData['amount'],
-//			],
-//			// Add balancing entry item...
-//		];
-//
-//		// Save the entry
-//		if (!$this->Entry->createEntry($entryData, $entryItemsData)) {
-//			$this->Session->setFlash(__('Failed to save transaction.'), 'danger');
-//		}
-//	}
-//
-//	// Set success message or handle errors as needed
-
-
 }

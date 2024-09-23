@@ -7,6 +7,9 @@ class KeywordsController extends WebzashAppController
 
 	public $uses = array('Webzash.LedgerKeyword', 'Webzash.Ledger');
 
+	/**
+	 * @return void
+	 */
 	public function index()
 	{
 		$this->set('title_for_layout', 'Keyword to Ledger Mappings');
@@ -34,6 +37,9 @@ class KeywordsController extends WebzashAppController
 		$this->set('ledgerKeywords', $ledgerKeywords);
 	}
 
+	/**
+	 * @return CakeResponse|void|null
+	 */
 	public function add()
 	{
 		$this->set('title_for_layout', 'Add Keyword Mapping');
@@ -64,6 +70,10 @@ class KeywordsController extends WebzashAppController
 		}
 	}
 
+	/**
+	 * @param $id
+	 * @return CakeResponse|void|null
+	 */
 	public function edit($id = null)
 	{
 		$this->set('title_for_layout', 'Edit Keyword Mapping');
@@ -107,6 +117,10 @@ class KeywordsController extends WebzashAppController
 		}
 	}
 
+	/**
+	 * @param $id
+	 * @return CakeResponse|null
+	 */
 	public function delete($id = null)
 	{
 		if (!$id) {
