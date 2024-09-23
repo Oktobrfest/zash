@@ -85,8 +85,6 @@
 		'type' => 'select',
 		'options' => array(
 			'' => 'Any',
-			'debit' => 'Debit',
-			'credit' => 'Credit',
 			'payment' => 'Payment',
 			'receipt' => 'Receipt'
 		),
