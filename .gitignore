@@ -1,13 +1,28 @@
 # Ignore Mac system files
 .DS_Store
 
+# Ignore CakePHP core directories except for specific cases
+/app/lib/Cake
+
+# Do not ignore the index.php file in webroot
+!app/webroot/index.php
+
+# Ignore all files in webroot except custom uploads and index.php
+/app/webroot/*
+!/app/webroot/index.php
+!/app/webroot/uploads/
+!/app/webroot/uploads/.gitkeep
+
+# Cache can be ignored
+/app/webroot/cache/*
+
 # Ignore Linux system file
 .swp
 
 # Ignore Windows thumbnail files
 Thumbs.db
 
-# Ignore logs and temp files
+# Ignore logs and temp files, but keep the .gitkeep files
 /logs/*
 /tmp/*
 /app/tmp/*
@@ -25,14 +40,7 @@ Thumbs.db
 /app/View/*
 /app/Test/*
 /app/Vendor/*
-/app/Plugin/*
 !/app/Plugin/BoostCake/*
-!/app/Plugin/Webzash/*
-
-# Ignore webroot files except custom uploads
-/app/webroot/*
-!/app/webroot/uploads/
-/app/webroot/cache/*
 
 # Ignore Composer dependencies
 /vendor/*
@@ -52,16 +60,11 @@ node_modules/
 .env.*.local
 
 # Ignore Docker-related files
-docker-compose.override.yml
-docker-compose.yml
-Dockerfile
 /docker-sync.yml
 /.docker/
 
 # Ignore IDE specific files (JetBrains, VSCode, Sublime, etc.)
-.idea/
 *.im
-.vscode/
 *.sublime-project
 *.sublime-workspace
 
@@ -72,20 +75,16 @@ Dockerfile
 *.save
 *.tmp
 
-# Ignore image assets, unless they're part of the project
+# Ignore image assets unless they're part of the project
 *.png
 *.jpg
 *.jpeg
 *.gif
 
-# Ignore custom uploads or user-generated content
+# Allow uploads folder but ignore its contents except for .gitkeep
 /app/webroot/uploads/*
-!app/webroot/uploads/.gitkeep
+!/app/webroot/uploads/.gitkeep
 
 # Ignore build files
 /build.xml
 /build.properties
-
-app/lib/Cake
-
-!app/webroot/index.php

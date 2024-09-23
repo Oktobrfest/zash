@@ -26,7 +26,7 @@ services:
       MYSQL_PASSWORD: wwaabbiiyy3f
       MYSQL_ROOT_PASSWORD: roomba33a
     ports:
-      - "3306:80"
+      - "3306:3306"
     volumes:
       - zash_db_data:/var/lib/mysql
 
