@@ -5,7 +5,7 @@ App::uses('WebzashAppController', 'Webzash.Controller');
 
 use OfxParser\Parser;
 
-class OfxController extends WebzashAppController
+class BulkController extends WebzashAppController
 {
 
 	public $uses = array('Webzash.LedgerKeyword', 'Webzash.Entry', 'Webzash.Group', 'Webzash.Ledger',
@@ -20,14 +20,14 @@ class OfxController extends WebzashAppController
 	{
 		if ($this->request->is('post')) {
 			// Check if a file is uploaded
-			if (!empty($this->request->data['Ofx']['file']['tmp_name'])) {
+			if (!empty($this->request->data['Bulk']['file']['tmp_name'])) {
 				// Load the OFX parser library
 				App::import('Vendor', 'OfxParser', array('file' => 'OfxParser/vendor/autoload.php'));
 
 				// Parse the OFX file
 				$ofxParser = new \OfxParser\Parser();
 				try {
-					$ofx = $ofxParser->loadFromFile($this->request->data['Ofx']['file']['tmp_name']);
+					$ofx = $ofxParser->loadFromFile($this->request->data['Bulk']['file']['tmp_name']);
 					// Extract data from OFX file (e.g., transactions)
 					$transactions = $ofx->bankAccounts[0]->statement->transactions;
 					$this->set('transactions', $transactions);
@@ -90,11 +90,26 @@ class OfxController extends WebzashAppController
 				'conditions' => array(
 					'Entrytype.label' => $entrytypeLabel)));
 
+			$narration = '';
+			if (isset($transaction->name)) {
+				if (is_array($transaction->name)) {
+					// Convert array to string
+					$transaction->name = implode(', ', $transaction->name);
+				}
+				$narration = $transaction->name;
+			}
+			if (isset($transaction->memo)) {
+				if (is_array($transaction->memo)) {
+					$transaction->memo = implode(', ', $transaction->memo);
+				}
+				$narration .= $transaction->memo;
+			}
+
 			$entrydata = null;
 			$entrydata['Entry']['number'] = $this->Entry->nextNumber($entrytype['Entrytype']['id']);
 			$entrydata['Entry']['entrytype_id'] = (string) $entrytype['Entrytype']['id'];
 			$entrydata['Entry']['tag_id'] = null;
-			$entrydata['Entry']['narration'] = (string) $transaction->name . $transaction->memo;
+			$entrydata['Entry']['narration'] = (string) $narration;
 			$entrydata['Entry']['date'] = $transaction->date->format('Y-m-d');
 
 			$curEntryitems[0] = array(
@@ -104,8 +119,15 @@ class OfxController extends WebzashAppController
 				"cr_amount" => $cr_amount
 			);
 
-	    	// BALANCING TRANSACTION- (used to have ledger_id (string), but got rid of it. see if it works still!
+			// BALANCING TRANSACTION- (used to have ledger_id (string), but got rid of it. see if it works still!
 			$transactionAmount = max($dr_amount, $cr_amount);
+
+			// Check for duplicate before proceeding
+			if ($this->isDuplicateEntry($narration, $entrydata['Entry']['date'] , $transactionAmount, $entrydata['Entry']['entrytype_id'], $debit_or_credit)) {
+				// If a duplicate is found, skip this transaction
+				$this->Session->setFlash(__d('webzash', 'Skipped Duplicate Entry!'), 'danger');
+				continue;
+			}
 
 			$opposite_dc = ($debit_or_credit == 'D') ? 'C' : 'D';
 			$curEntryitems[1] = array(
@@ -120,9 +142,11 @@ class OfxController extends WebzashAppController
 				return false;
 			}
 
-			$err = $this->checkEquality($curEntryitems, $entrydata);
-			if (!$err) {
-				return false;
+			$success = $this->checkEquality($curEntryitems, $entrydata);
+			if (!$success) {
+//				 Instead of breaking entire operation, just skip the transaction.
+				continue;
+//				return false;
 			}
 
 			$entryitemdata = array();
@@ -354,4 +378,79 @@ class OfxController extends WebzashAppController
 		}
 		return $balancing_entry_ledger_id;
 	}
+
+
+	/**
+	 * Check if an entry with the same narration, date, amount, and entry type already exists.
+	 *
+	 * @param string $narration
+	 * @param string $date
+	 * @param float $amount
+	 * @param int $entrytype_id
+	 * @param string $dc
+	 * @return bool
+	 */
+	private function isDuplicateEntry($narration, $date, $amount, $entrytype_id, $dc)
+	{
+		$conditions = array(
+			'Entry.narration' => $narration,
+			'Entry.date' => $date,
+			'Entry.entrytype_id' => $entrytype_id,
+			'Entryitem.amount' => $amount,
+			'Entryitem.dc' => $dc
+		);
+
+		$existingEntry = $this->Entry->find('first', array(
+			'conditions' => $conditions,
+			'joins' => array(
+				array(
+					'table' => 'entryitems',
+					'alias' => 'Entryitem',
+					'type' => 'INNER',
+					'conditions' => array(
+						'Entryitem.entry_id = Entry.id'
+					)
+				)
+			),
+			'recursive' => -1
+		));
+
+		return !empty($existingEntry);
+	}
+
+
+
+
+
+//	private function isDuplicateEntry($entrydata, $curEntryitems, $entrytypeLabel)
+//	{
+//		$conditions = array(
+//			'Entry.narration' => $entrydata['Entry']['narration'],
+//			'Entry.date' => $entrydata['Entry']['date'],
+//			'Entrytype.label' => $entrytypeLabel,
+//			'OR' => array(
+//				array('Entryitem.dr_amount' => $curEntryitems[0]["dr_amount"]),
+//				array('Entryitem.cr_amount' => $curEntryitems[0]["cr_amount"])
+//			)
+//		);
+//
+//		$existingEntry = $this->Entry->find('first', array(
+//			'conditions' => $conditions,
+//			'joins' => array(
+//				array(
+//					'table' => 'entryitems',
+//					'alias' => 'Entryitem',
+//					'type' => 'INNER',
+//					'conditions' => array(
+//						'Entryitem.entry_id = Entry.id'
+//					)
+//				)
+//			)
+//		));
+//
+//		return !empty($existingEntry);
+//	}
+
+
+
 }

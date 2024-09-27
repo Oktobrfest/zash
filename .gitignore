@@ -89,3 +89,4 @@ node_modules/
 # Ignore build files
 /build.xml
 /build.properties
+app/Config/webzash.php

@@ -289,17 +289,64 @@ function countDecimal($amount) {
  * This function formats the the entry number as per prefix, suffix and zero
  * padding for that entry type
  */
+//function toEntryNumber($number, $entrytype_id) {
+//	if (Configure::read('Account.ET.' . $entrytype_id . '.zero_padding') > 0) {
+//		return Configure::read('Account.ET.' . $entrytype_id . '.prefix') .
+//			str_pad($number, Configure::read('Account.ET.' . $entrytype_id . '.zero_padding'), '0', STR_PAD_LEFT) .
+//			Configure::read('Account.ET.' . $entrytype_id . '.suffix');
+//	} else {
+//		return Configure::read('Account.ET.' . $entrytype_id . '.prefix') .
+//			$number .
+//			Configure::read('Account.ET.' . $entrytype_id . '.suffix');
+//	}
+//}
+/**
+ * This function formats the entry number as per prefix, suffix, and zero padding for that entry type
+ */
 function toEntryNumber($number, $entrytype_id) {
-	if (Configure::read('Account.ET.' . $entrytype_id . '.zero_padding') > 0) {
-		return Configure::read('Account.ET.' . $entrytype_id . '.prefix') .
-			str_pad($number, Configure::read('Account.ET.' . $entrytype_id . '.zero_padding'), '0', STR_PAD_LEFT) .
-			Configure::read('Account.ET.' . $entrytype_id . '.suffix');
+
+	$prefix = Configure::read('Account.ET.' . $entrytype_id . '.prefix');
+	$suffix = Configure::read('Account.ET.' . $entrytype_id . '.suffix');
+	$zero_padding = Configure::read('Account.ET.' . $entrytype_id . '.zero_padding');
+
+	// Ensure prefix is a string
+	if (is_array($prefix)) {
+		$prefix = implode('', $prefix); // Combine array elements into a single string
+		error_log("Warning: Prefix for entrytype_id $entrytype_id was an array. Converted to string.");
+	} elseif (!is_string($prefix)) {
+		$prefix = '';
+		error_log("Warning: Prefix for entrytype_id $entrytype_id is not a string. Defaulting to empty string.");
+	}
+
+	// Ensure suffix is a string
+	if (is_array($suffix)) {
+		$suffix = implode('', $suffix); // Combine array elements into a single string
+		error_log("Warning: Suffix for entrytype_id $entrytype_id was an array. Converted to string.");
+	} elseif (!is_string($suffix)) {
+		$suffix = '';
+		error_log("Warning: Suffix for entrytype_id $entrytype_id is not a string. Defaulting to empty string.");
+	}
+
+	// Ensure zero_padding is an integer
+	if (is_array($zero_padding)) {
+		$zero_padding = isset($zero_padding[0]) ? (int)$zero_padding[0] : 0; // Use first element if array
+		error_log("Warning: Zero padding for entrytype_id $entrytype_id was an array. Using first value: $zero_padding.");
+	} elseif (!is_numeric($zero_padding)) {
+		$zero_padding = 0;
+		error_log("Warning: Zero padding for entrytype_id $entrytype_id is not numeric. Defaulting to 0.");
 	} else {
-		return Configure::read('Account.ET.' . $entrytype_id . '.prefix') .
-			$number .
-			Configure::read('Account.ET.' . $entrytype_id . '.suffix');
+		$zero_padding = (int)$zero_padding;
+	}
+
+	if ($zero_padding > 0) {
+		return $prefix .
+			str_pad($number, $zero_padding, '0', STR_PAD_LEFT) .
+			$suffix;
+	} else {
+		return $prefix . $number . $suffix;
 	}
 }
+
 
 /**
  * This function returns the ledger or group name with code if present

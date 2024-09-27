@@ -9,7 +9,7 @@ services:
       - ./app/apache-config/default.conf:/etc/apache2/sites-available/000-default.conf:ro
     ports:
       - "5090:80"
-      - "9000:9000"
+      - "5091:9000"
     depends_on:
       - zash_db
     environment:
