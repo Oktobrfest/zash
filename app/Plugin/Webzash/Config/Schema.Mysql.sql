@@ -178,7 +178,7 @@ ALTER TABLE `%_PREFIX_%entryitems`
 
 
 
-CREATE TABLE ledger_keywords (
+CREATE TABLE `%_PREFIX_%ledger_keywords` (
 								 id BIGINT(18) UNSIGNED NOT NULL AUTO_INCREMENT,
 								 keyword VARCHAR(255) NOT NULL,
 								 ledger_id BIGINT(18) UNSIGNED NOT NULL,

@@ -355,6 +355,6 @@ function toCodeWithName($code, $name) {
 	if (strlen($code) <= 0) {
 		return $name;
 	} else {
-		return '[' . $code . '] ' . $name;
+		return $name . '     [' . $code . ']';
 	}
 }
