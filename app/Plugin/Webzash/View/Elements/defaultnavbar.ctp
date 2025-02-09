@@ -64,6 +64,9 @@
 				<li><?php echo $this->Html->link(__d('webzash', 'Bulk'), array('plugin' => 'webzash', 'controller' => 'bulk', 'action' => 'upload')); ?></li>
 				<li><?php echo $this->Html->link(__d('webzash', 'Settings'), array('plugin' => 'webzash', 'controller' => 'settings', 'action' => 'index')); ?></li>
 				<li><?php echo $this->Html->link(__d('webzash', 'Help'), array('plugin' => 'webzash', 'controller' => 'help', 'action' => 'index')); ?></li>
+				<li><?php echo $this->Html->link(__d('webzash', 'Copy Groups'), array('plugin' => 'webzash', 'controller' => 'groups', 'action' => 'copy')); ?></li>
+				<li><?php echo $this->Html->link(__d('webzash', 'Copy Ledgers'), array('plugin' => 'webzash', 'controller' => 'ledgers', 'action' => 'copy')); ?></li>
+
 			</ul>
 			<ul class="nav navbar-nav navbar-right">
 				<?php if ($this->Session->read('Auth.User.role') == 'admin') : ?>

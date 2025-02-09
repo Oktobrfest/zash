@@ -1,29 +1,4 @@
 <?php
-/**
- * The MIT License (MIT)
- *
- * Webzash - Easy to use web based double entry accounting software
- *
- * Copyright (c) 2014 Prashant Shah <pshah.mumbai@gmail.com>
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
 
 App::uses('WebzashAppController', 'Webzash.Controller');
 App::uses('GroupTree', 'Webzash.Lib');
@@ -34,25 +9,28 @@ App::uses('GroupTree', 'Webzash.Lib');
  * @package Webzash
  * @subpackage Webzash.controllers
  */
-class GroupsController extends WebzashAppController {
+class GroupsController extends WebzashAppController
+{
 
 	public $uses = array('Webzash.Group', 'Webzash.Ledger', 'Webzash.Log');
 
-/**
- * index method
- *
- * @return void
- */
-	public function index() {
+	/**
+	 * index method
+	 *
+	 * @return void
+	 */
+	public function index()
+	{
 		$this->redirect(array('plugin' => 'webzash', 'controller' => 'accounts', 'action' => 'show'));
 	}
 
-/**
- * add method
- *
- * @return void
- */
-	public function add() {
+	/**
+	 * add method
+	 *
+	 * @return void
+	 */
+	public function add()
+	{
 
 		$this->set('title_for_layout', __d('webzash', 'Add Account Group'));
 
@@ -98,15 +76,16 @@ class GroupsController extends WebzashAppController {
 	}
 
 
-/**
- * edit method
- *
- * @throws NotFoundException
- * @throws ForbiddenException
- * @param string $id
- * @return void
- */
-	public function edit($id = null) {
+	/**
+	 * edit method
+	 *
+	 * @param string $id
+	 * @return void
+	 * @throws NotFoundException
+	 * @throws ForbiddenException
+	 */
+	public function edit($id = null)
+	{
 
 		$this->set('title_for_layout', __d('webzash', 'Edit Account Group'));
 
@@ -177,15 +156,16 @@ class GroupsController extends WebzashAppController {
 		}
 	}
 
-/**
- * delete method
- *
- * @throws NotFoundException
- * @throws MethodNotAllowedException
- * @param string $id
- * @return void
- */
-	public function delete($id = null) {
+	/**
+	 * delete method
+	 *
+	 * @param string $id
+	 * @return void
+	 * @throws NotFoundException
+	 * @throws MethodNotAllowedException
+	 */
+	public function delete($id = null)
+	{
 
 		/* GET access not allowed */
 		if ($this->request->is('get')) {
@@ -241,7 +221,8 @@ class GroupsController extends WebzashAppController {
 		return $this->redirect(array('plugin' => 'webzash', 'controller' => 'accounts', 'action' => 'show'));
 	}
 
-        function beforeFilter() {
+	function beforeFilter()
+	{
 		parent::beforeFilter();
 
 		/* Check if acccount is locked */
@@ -251,10 +232,11 @@ class GroupsController extends WebzashAppController {
 				return $this->redirect(array('plugin' => 'webzash', 'controller' => 'accounts', 'action' => 'show'));
 			}
 		}
-        }
+	}
 
 	/* Authorization check */
-	public function isAuthorized($user) {
+	public function isAuthorized($user)
+	{
 		if ($this->action === 'add') {
 			return $this->Permission->is_allowed('add group');
 		}
@@ -269,4 +251,139 @@ class GroupsController extends WebzashAppController {
 
 		return parent::isAuthorized($user);
 	}
+
+
+// WORKS!
+	public function copy() {
+		$this->set('title_for_layout', __d('webzash', 'Copy Account Groups'));
+
+		if (Configure::read('Account.locked') == 1) {
+			$this->Session->setFlash(__d('webzash', 'Sorry, no changes are possible since the account is locked.'), 'danger');
+			return $this->redirect(array('plugin' => 'webzash', 'controller' => 'accounts', 'action' => 'show'));
+		}
+
+		$this->loadModel('Webzash.Wzaccount');
+		$this->Wzaccount->useDbConfig = 'wz';
+
+		// Get current active account ID from session
+		$current_account = $this->Session->read('ActiveAccount.id');
+
+		$wzaccounts = $this->Wzaccount->find('list', array(
+			'fields' => array('Wzaccount.id', 'Wzaccount.label'),
+			'conditions' => array('Wzaccount.id !=' => $current_account),
+			'order' => array('Wzaccount.label' => 'asc')
+		));
+		$this->set('wzaccounts', $wzaccounts);
+
+		if ($this->request->is('post')) {
+			if (!empty($this->request->data)) {
+				$sourceId = $this->request->data['Group']['source_account_id'];
+				$destDs = $this->Group->getDataSource();
+				$destDs->begin();
+
+				try {
+					// Get source account details
+					$sourceAccount = $this->Wzaccount->find('first', array(
+						'conditions' => array('Wzaccount.id' => $sourceId)
+					));
+					if (!$sourceAccount) {
+						throw new Exception(__d('webzash', 'Source account not found'));
+					}
+
+					// Get destination account details
+					$destAccount = $this->Wzaccount->find('first', array(
+						'conditions' => array('Wzaccount.id' => $current_account)
+					));
+					if (!$destAccount) {
+						throw new Exception(__d('webzash', 'Destination account not found'));
+					}
+
+					// Setup SOURCE connection
+					$sourceConfig = $destDs->config;
+					$sourceConfig['prefix'] = $sourceAccount['Wzaccount']['db_prefix'];
+					ConnectionManager::create('source_db', $sourceConfig);
+
+					// Setup DESTINATION connection
+					$destConfig = $sourceConfig;
+					$destConfig['prefix'] = $destAccount['Wzaccount']['db_prefix'];
+					ConnectionManager::create('dest_db', $destConfig);
+
+					// Create the models
+					App::import('Model', 'Webzash.Group');
+					$SourceGroup = new Group();
+					$SourceGroup->useTable = 'groups';
+					$SourceGroup->setDataSource('source_db');
+
+					$DestGroup = new Group();
+					$DestGroup->useTable = 'groups';
+					$DestGroup->setDataSource('dest_db');
+
+					$sourceGroups = $SourceGroup->find('all', array(
+						'order' => array('Group.parent_id' => 'asc')
+					));
+
+					$idMap = array();
+					$copied = 0;
+					$skipped = 0;
+
+					foreach ($sourceGroups as $srcGroup) {
+						$srcName = $srcGroup['Group']['name'];
+
+						$existing = $DestGroup->find('first', array(
+							'conditions' => array('Group.name' => $srcName)
+						));
+
+						if ($existing) {
+							$idMap[$srcGroup['Group']['id']] = $existing['Group']['id'];
+							$skipped++;
+							continue;
+						}
+
+						echo "Copying new group: " . $srcName . "\n";
+
+						$data = $srcGroup['Group'];
+						unset($data['id']);
+
+						if (!empty($data['parent_id'])) {
+							if (isset($idMap[$data['parent_id']])) {
+								$data['parent_id'] = $idMap[$data['parent_id']];
+							} else {
+								$data['parent_id'] = 0;
+							}
+						}
+
+						$DestGroup->create();
+						if ($DestGroup->save(array('Group' => $data))) {
+							$newId = $DestGroup->id;
+							$idMap[$srcGroup['Group']['id']] = $newId;
+							$copied++;
+							$this->Log->add('Copied Group: ' . $srcName, 1);
+						} else {
+							$skipped++;
+							$this->Log->add('Failed to copy group: ' . $srcName, 1);
+						}
+					}
+
+					$destDs->commit();
+
+					$summary = sprintf(
+						__d('webzash', 'Groups copy complete. %d groups copied, %d groups skipped.'),
+						$copied,
+						$skipped
+					);
+					$this->Session->setFlash($summary, 'success');
+					return $this->redirect(array('plugin' => 'webzash', 'controller' => 'accounts', 'action' => 'show'));
+
+				} catch (Exception $e) {
+					$destDs->rollback();
+					$this->Session->setFlash($e->getMessage(), 'danger');
+					return;
+				}
+			}
+		}
+	}
+
+
+
+
 }

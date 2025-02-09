@@ -313,4 +313,175 @@ class LedgersController extends WebzashAppController {
 
 		return parent::isAuthorized($user);
 	}
+
+
+
+	public function copy() { //  created new method for copying ledgers
+		$this->set('title_for_layout', __d('webzash', 'Copy Account Ledgers')); //  title updated for ledgers
+
+		if (Configure::read('Account.locked') == 1) { //  same locked check as for groups
+			$this->Session->setFlash(__d('webzash', 'Sorry, no changes are possible since the account is locked.'), 'danger'); //  flash message
+			return $this->redirect(array('plugin' => 'webzash', 'controller' => 'accounts', 'action' => 'show')); //  redirect unchanged
+		}
+
+		$this->loadModel('Webzash.Wzaccount'); //  load the Wzaccount model as in groups copy
+		$this->Wzaccount->useDbConfig = 'wz'; //  set db config to 'wz'
+
+		// Get current active account ID from session
+		$current_account = $this->Session->read('ActiveAccount.id'); //  same as in groups copy
+
+		$wzaccounts = $this->Wzaccount->find('list', array( //  retrieve list of available accounts
+			'fields' => array('Wzaccount.id', 'Wzaccount.label'), //  same fields as groups copy
+			'conditions' => array('Wzaccount.id !=' => $current_account), //  exclude the current account
+			'order' => array('Wzaccount.label' => 'asc') //  same order as groups copy
+		));
+		$this->set('wzaccounts', $wzaccounts); //  set available accounts for the view
+
+		if ($this->request->is('post')) { //  process the submitted form
+			if (!empty($this->request->data)) { //  ensure data is not empty
+				// Use the Ledger field (not Group) to retrieve the source account ID
+				$sourceId = $this->request->data['Ledger']['source_account_id']; //  use Ledger instead of Group
+				$destDs = $this->Ledger->getDataSource(); //  get datasource from Ledger model
+				$destDs->begin(); //  begin transaction
+
+				try {
+					// Get source account details
+					$sourceAccount = $this->Wzaccount->find('first', array(
+						'conditions' => array('Wzaccount.id' => $sourceId)
+					)); //  same lookup as groups
+					if (!$sourceAccount) {
+						throw new Exception(__d('webzash', 'Source account not found')); //  throw exception if missing
+					}
+
+					// Get destination account details
+					$destAccount = $this->Wzaccount->find('first', array(
+						'conditions' => array('Wzaccount.id' => $current_account)
+					)); //  same as groups
+					if (!$destAccount) {
+						throw new Exception(__d('webzash', 'Destination account not found')); //  exception if missing
+					}
+
+					// Setup SOURCE connection
+					$sourceConfig = $destDs->config; //  use existing configuration
+					$sourceConfig['prefix'] = $sourceAccount['Wzaccount']['db_prefix']; //  set source db prefix
+					ConnectionManager::create('source_db', $sourceConfig); //  create source connection
+
+					// Setup DESTINATION connection
+					$destConfig = $sourceConfig; //  duplicate config array
+					$destConfig['prefix'] = $destAccount['Wzaccount']['db_prefix']; //  set destination db prefix
+					ConnectionManager::create('dest_db', $destConfig); //  create destination connection
+
+					// Create the Ledger models for source and destination
+					App::import('Model', 'Webzash.Ledger'); //  import Ledger model instead of Group
+					$SourceLedger = new Ledger(); //  create source ledger model
+					$SourceLedger->useTable = 'ledgers'; //  specify table 'ledgers'
+					$SourceLedger->setDataSource('source_db'); //  set datasource for source ledger
+
+					$DestLedger = new Ledger(); //  create destination ledger model
+					$DestLedger->useTable = 'ledgers'; //  specify table 'ledgers'
+					$DestLedger->setDataSource('dest_db'); //  set datasource for destination ledger
+
+					// Create Group models to look up parent groups (by name)
+					App::import('Model', 'Webzash.Group'); //  import Group model for lookup
+					$SourceGroup = new Group(); //  source group model
+					$SourceGroup->useTable = 'groups'; //  set table to 'groups'
+					$SourceGroup->setDataSource('source_db'); //  set datasource for source group
+
+					$DestGroup = new Group(); //  destination group model
+					$DestGroup->useTable = 'groups'; //  set table to 'groups'
+					$DestGroup->setDataSource('dest_db'); //  set datasource for destination group
+
+					// Get all source ledgers
+					$sourceLedgers = $SourceLedger->find('all', array(
+						'order' => array('Ledger.id' => 'asc') //  order by ledger id (or name if preferred)
+					)); //  retrieve all ledgers from the source account
+
+					$copied = 0; //  initialize counter for copied ledgers
+					$skipped = 0; //  initialize counter for skipped ledgers
+
+					foreach ($sourceLedgers as $srcLedger) { //  iterate over each source ledger
+						$srcName = $srcLedger['Ledger']['name']; //  get ledger name
+
+						// Check if ledger with this name already exists in destination
+						$existing = $DestLedger->find('first', array(
+							'conditions' => array('Ledger.name' => $srcName)
+						)); //  lookup by ledger name
+						if ($existing) { //  if already exists, skip copying
+							$skipped++; //  increment skipped counter
+							continue; //  skip to next ledger
+						}
+
+						echo "Copying new ledger: " . $srcName . "\n"; //  output for feedback
+
+						$data = $srcLedger['Ledger']; //  get ledger data array
+						unset($data['id']); //  remove primary key so a new one is assigned
+
+						//  Force op_balance to 0 for the copied ledger
+						$data['op_balance'] = 0; //  set op_balance to 0
+						$data['op_balance_dc'] = 'D'; //  set op_balance_dc to 'D'
+
+						// Look up the ledger's parent group by its source group id, then find the destination group by name
+						$srcGroupId = $data['group_id']; //  save source group id
+						$srcGroup = $SourceGroup->find('first', array(
+							'conditions' => array('Group.id' => $srcGroupId)
+						)); //  get source group record
+						if (!$srcGroup) { //  if source group not found
+							$data['group_id'] = 0; //  default to 0 (or handle as desired)
+						} else {
+							$groupName = $srcGroup['Group']['name']; //  get group name from source
+							$destGroup = $DestGroup->find('first', array(
+								'conditions' => array('Group.name' => $groupName)
+							)); //  look up destination group by name
+							if ($destGroup) { //  if found, update group_id
+								$data['group_id'] = $destGroup['Group']['id']; //  set ledger group_id to destination id
+							} else { //  if not found, default to 0 (or handle otherwise)
+								$data['group_id'] = 0; //  default group_id to 0
+							}
+						}
+
+						$DestLedger->create(); //  create a new ledger record in destination
+						if ($DestLedger->save(array('Ledger' => $data))) { //  attempt to save the ledger
+							$copied++; //  increment copied counter on success
+							$this->Log->add('Copied Ledger: ' . $srcName, 1); //  log success message
+						} else { //  if save fails
+							$skipped++; //  increment skipped counter
+							$this->Log->add('Failed to copy ledger: ' . $srcName, 1); //  log failure
+						}
+					}
+
+					$destDs->commit(); //  commit the transaction
+
+					$preview_output = '<h4>Ledger Copy Details</h4><ul><li>'
+						. implode('</li><li>', $message_output)
+						. '</li></ul>'; //  build an HTML unordered list
+
+					// Create the final result message with a summary and the detailed list
+					$result_msg = '<div class="alert alert-success">';
+					$result_msg .= '<h4>Ledger Copy Summary</h4>';
+					$result_msg .= '<ul>';
+					$result_msg .= '<li>Copied: ' . $copied . ' ledger(s)</li>';
+					$result_msg .= '<li>Skipped: ' . $skipped . ' ledger(s)</li>';
+					$result_msg .= '</ul>';
+					$result_msg .= $preview_output;
+					$result_msg .= '</div>'; //  final pretty HTML summary message
+
+
+					$this->Session->setFlash($result_msg, 'success'); //  flash success message
+					return $this->redirect(array('plugin' => 'webzash', 'controller' => 'accounts', 'action' => 'show')); //  redirect to accounts page
+
+				} catch (Exception $e) { //  catch any exceptions during the process
+					$destDs->rollback(); //  rollback transaction on error
+					$this->Session->setFlash($e->getMessage(), 'danger'); //  flash error message
+					return;
+				}
+			}
+		}
+	}
+
+
+
+
+
+
+
 }
