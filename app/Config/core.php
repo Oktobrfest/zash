@@ -227,7 +227,13 @@
  * the cake shell command: cake schema create Sessions
  */
 	Configure::write('Session', array(
-		'defaults' => 'php'
+		'defaults' => 'php',
+		'timeout' => 11440 ,
+		'cookieTimeout' => 11440 ,
+		'ini' => array(
+			'session.cookie_lifetime' => 186400,
+			'session.gc_maxlifetime' => 186400 ,
+		)
 	));
 
 /**

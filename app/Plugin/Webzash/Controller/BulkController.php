@@ -90,20 +90,7 @@ class BulkController extends WebzashAppController
 				'conditions' => array(
 					'Entrytype.label' => $entrytypeLabel)));
 
-			$narration = '';
-			if (isset($transaction->name)) {
-				if (is_array($transaction->name)) {
-					// Convert array to string
-					$transaction->name = implode(', ', $transaction->name);
-				}
-				$narration = $transaction->name;
-			}
-			if (isset($transaction->memo)) {
-				if (is_array($transaction->memo)) {
-					$transaction->memo = implode(', ', $transaction->memo);
-				}
-				$narration .= $transaction->memo;
-			}
+			$narration = $this->processTransactionFields($transaction->name, $transaction->memo);
 
 			$entrydata = null;
 			$entrydata['Entry']['number'] = $this->Entry->nextNumber($entrytype['Entrytype']['id']);
@@ -418,39 +405,51 @@ class BulkController extends WebzashAppController
 		return !empty($existingEntry);
 	}
 
+	/**
+	 * Processes NAME and MEMO fields from QBO/OFX/QFX transactions to avoid duplication
+	 * and ensure the most complete information is used.
+	 *
+	 * @param mixed $name The NAME field value
+	 * @param mixed $memo The MEMO field value
+	 * @return string The processed narration
+	 */
+	private function processTransactionFields($name, $memo) {
+		// Convert null/false/empty values to empty string, handle arrays
+		$nameField = '';
+		$memoField = '';
 
+		// Process name field
+		if (!empty($name)) {
+			$nameField = is_array($name) ? implode(', ', array_filter($name, 'strlen')) : trim((string)$name);
+		}
 
+		// Process memo field
+		if (!empty($memo)) {
+			$memoField = is_array($memo) ? implode(', ', array_filter($memo, 'strlen')) : trim((string)$memo);
+		}
 
+		// Return early if either field is empty
+		if ($nameField === '') return $memoField;
+		if ($memoField === '') return $nameField;
 
-//	private function isDuplicateEntry($entrydata, $curEntryitems, $entrytypeLabel)
-//	{
-//		$conditions = array(
-//			'Entry.narration' => $entrydata['Entry']['narration'],
-//			'Entry.date' => $entrydata['Entry']['date'],
-//			'Entrytype.label' => $entrytypeLabel,
-//			'OR' => array(
-//				array('Entryitem.dr_amount' => $curEntryitems[0]["dr_amount"]),
-//				array('Entryitem.cr_amount' => $curEntryitems[0]["cr_amount"])
-//			)
-//		);
-//
-//		$existingEntry = $this->Entry->find('first', array(
-//			'conditions' => $conditions,
-//			'joins' => array(
-//				array(
-//					'table' => 'entryitems',
-//					'alias' => 'Entryitem',
-//					'type' => 'INNER',
-//					'conditions' => array(
-//						'Entryitem.entry_id = Entry.id'
-//					)
-//				)
-//			)
-//		));
-//
-//		return !empty($existingEntry);
-//	}
+		// Handle exact duplicates (case insensitive)
+		if (strcasecmp($nameField, $memoField) === 0) {
+			return $nameField;
+		}
 
+		// Check if memo contains the complete name (case insensitive)
+		if (stripos($memoField, $nameField) === 0) {
+			return $memoField;
+		}
+
+		// Check if name contains the complete memo (case insensitive)
+		if (stripos($nameField, $memoField) === 0) {
+			return $nameField;
+		}
+
+		// Combine fields if they contain different information
+		return $nameField . ' - ' . $memoField;
+	}
 
 
 }

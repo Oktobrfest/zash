@@ -87,8 +87,6 @@
 			'' => 'Any',
 			'debit' => 'Debit',
 			'credit' => 'Credit',
-			'payment' => 'Payment',
-			'receipt' => 'Receipt'
 		),
 		'class' => 'form-control',
 		'label' => false,
