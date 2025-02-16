@@ -90,3 +90,4 @@ node_modules/
 /build.xml
 /build.properties
 app/Config/webzash.php
+/myvenv/
