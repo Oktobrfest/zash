@@ -31,7 +31,40 @@ class ReportsController extends WebzashAppController {
 		return;
 	}
 
-/**
+	/**
+	 * Generates a download filename using the Account name, a report title, and the Account end date.
+	 * – The date is formatted as MM-DD-YY.
+	 * – Each part (company name, report title, date) is separated by a single space,
+	 *   with no extra space at the end.
+	 * – If either the company name or the end date is not set, they will fall back to an empty string.
+	 *
+	 * @param string $reportTitle The report title (for example, "balancesheet" or "profitloss")
+	 * @param string $extension   The file extension (e.g. "csv" or "xls")
+	 * @return string The generated filename.
+	 */
+	protected function _generateFilename($reportTitle, $extension) {
+		$company = Configure::read('Account.name');
+		$company = $company ? trim($company) : "";
+
+		$dateRaw = Configure::read('Account.enddate');
+		// Use today’s date as a fallback if no end date is set.
+		$date = $dateRaw ? date('m-d-y', strtotime($dateRaw)) : date('m-d-y');
+
+		$parts = array();
+		if ($company !== "") {
+			$parts[] = $company;
+		}
+		if ($reportTitle !== "") {
+			$parts[] = $reportTitle;
+		}
+		if ($date !== "") {
+			$parts[] = $date;
+		}
+		return implode(" ", $parts) . "." . $extension;
+	}
+
+
+	/**
  * balancesheet method
  *
  * @return void
@@ -247,7 +280,7 @@ class ReportsController extends WebzashAppController {
 			$response =  $view->render('Reports/downloadcsv/balancesheet');
 			$this->response->body($response);
 			$this->response->type('text/csv');
-			$this->response->download('balancesheet.csv');
+			$this->response->download($this->_generateFilename('Balance Sheet', 'csv'));
 			return $this->response;
 		}
 
@@ -259,7 +292,7 @@ class ReportsController extends WebzashAppController {
 			$response =  $view->render('Reports/downloadxls/balancesheet');
 			$this->response->body($response);
 			$this->response->type('application/vnd.ms-excel');
-			$this->response->download('balancesheet.xls');
+			$this->response->download($this->_generateFilename('Balance Sheet', 'xls'));
 			return $this->response;
 		}
 
@@ -468,7 +501,8 @@ class ReportsController extends WebzashAppController {
 			$response =  $view->render('Reports/downloadcsv/profitloss');
 			$this->response->body($response);
 			$this->response->type('text/csv');
-			$this->response->download('profitloss.csv');
+			$this->response->download($this->_generateFilename('Profit & Loss', 'csv'));
+
 			return $this->response;
 		}
 
@@ -480,7 +514,7 @@ class ReportsController extends WebzashAppController {
 			$response =  $view->render('Reports/downloadxls/profitloss');
 			$this->response->body($response);
 			$this->response->type('application/vnd.ms-excel');
-			$this->response->download('profitloss.xls');
+			$this->response->download($this->_generateFilename('Profit & Loss', 'xls'));
 			return $this->response;
 		}
 
@@ -531,7 +565,7 @@ class ReportsController extends WebzashAppController {
 			$response =  $view->render('Reports/downloadcsv/trialbalance');
 			$this->response->body($response);
 			$this->response->type('text/csv');
-			$this->response->download('trialbalance.csv');
+			$this->response->download($this->_generateFilename('Trial Balance', 'csv'));
 			return $this->response;
 		}
 
@@ -543,7 +577,7 @@ class ReportsController extends WebzashAppController {
 			$response =  $view->render('Reports/downloadxls/trialbalance');
 			$this->response->body($response);
 			$this->response->type('application/vnd.ms-excel');
-			$this->response->download('trialbalance.xls');
+			$this->response->download($this->_generateFilename('Trial Balance', 'xls'));
 			return $this->response;
 		}
 
@@ -817,7 +851,7 @@ class ReportsController extends WebzashAppController {
 			$response =  $view->render('Reports/downloadcsv/ledgerstatement');
 			$this->response->body($response);
 			$this->response->type('text/csv');
-			$this->response->download('ledgerstatement.csv');
+			$this->response->download($this->_generateFilename('Ledger Statement', 'csv'));
 			return $this->response;
 		}
 
@@ -829,7 +863,7 @@ class ReportsController extends WebzashAppController {
 			$response =  $view->render('Reports/downloadxls/ledgerstatement');
 			$this->response->body($response);
 			$this->response->type('application/vnd.ms-excel');
-			$this->response->download('ledgerstatement.xls');
+			$this->response->download($this->_generateFilename('Ledger Statement', 'xls'));
 			return $this->response;
 		}
 
@@ -1056,7 +1090,7 @@ class ReportsController extends WebzashAppController {
 			$response =  $view->render('Reports/downloadcsv/ledgerentries');
 			$this->response->body($response);
 			$this->response->type('text/csv');
-			$this->response->download('ledgerentries.csv');
+			$this->response->download($this->_generateFilename('Ledger Entries', 'csv'));
 			return $this->response;
 		}
 
@@ -1068,7 +1102,7 @@ class ReportsController extends WebzashAppController {
 			$response =  $view->render('Reports/downloadxls/ledgerentries');
 			$this->response->body($response);
 			$this->response->type('application/vnd.ms-excel');
-			$this->response->download('ledgerentries.xls');
+			$this->response->download($this->_generateFilename('Ledger Entries', 'xls'));
 			return $this->response;
 		}
 
@@ -1376,7 +1410,7 @@ class ReportsController extends WebzashAppController {
 			$response =  $view->render('Reports/downloadcsv/reconciliation');
 			$this->response->body($response);
 			$this->response->type('text/csv');
-			$this->response->download('reconciliation.csv');
+			$this->response->download($this->_generateFilename('Reconciliation', 'csv'));
 			return $this->response;
 		}
 
@@ -1388,7 +1422,7 @@ class ReportsController extends WebzashAppController {
 			$response =  $view->render('Reports/downloadxls/reconciliation');
 			$this->response->body($response);
 			$this->response->type('application/vnd.ms-excel');
-			$this->response->download('reconciliation.xls');
+			$this->response->download($this->_generateFilename('Reconciliation', 'xls'));
 			return $this->response;
 		}
 
@@ -1442,8 +1476,812 @@ class ReportsController extends WebzashAppController {
 			return $this->Permission->is_allowed('access reports');
 		}
 
+		if ($this->action === 'cashflow') {
+			return $this->Permission->is_allowed('access reports');
+		}
+
 		return parent::isAuthorized($user);
 	}
+
+
+
+
+
+
+
+
+	public function cashflow() {
+		$this->set('title_for_layout', __d('webzash', 'Cash Flow Statement'));
+
+		// Handle POST: if start/end dates are submitted, redirect with parameters.
+		if ($this->request->is('post')) {
+			$redirect_params = array('plugin' => 'webzash', 'controller' => 'reports', 'action' => 'cashflow');
+			if (!empty($this->request->data['cashflow']['startdate']) || !empty($this->request->data['cashflow']['enddate'])) {
+				$redirect_params['options'] = 1;
+				if (!empty($this->request->data['cashflow']['startdate'])) {
+					$redirect_params['startdate'] = $this->request->data['cashflow']['startdate'];
+				}
+				if (!empty($this->request->data['cashflow']['enddate'])) {
+					$redirect_params['enddate'] = $this->request->data['cashflow']['enddate'];
+				}
+			}
+			return $this->redirect($redirect_params);
+		}
+
+		// Initialize dates from configuration or passed arguments.
+		$startdate = Configure::read('Account.startdate');
+		$enddate   = Configure::read('Account.enddate');
+		if (!empty($this->passedArgs['options'])) {
+			$this->set('options', true);
+			if (!empty($this->passedArgs['startdate'])) {
+				$startdate = dateToSQL($this->passedArgs['startdate']);
+				$this->request->data['cashflow']['startdate'] = $this->passedArgs['startdate'];
+			}
+			if (!empty($this->passedArgs['enddate'])) {
+				$enddate = dateToSQL($this->passedArgs['enddate']);
+				$this->request->data['cashflow']['enddate'] = $this->passedArgs['enddate'];
+			}
+		} else {
+			$this->set('options', false);
+		}
+
+		$subtitle = __d('webzash', 'Cash Flow Statement from %s to %s',
+			dateFromSql($startdate),
+			dateFromSql($enddate)
+		);
+		$this->set('subtitle', $subtitle);
+
+		// Initialize the cash flow data structure.
+		$cashflow = array(
+			'beginning_balance'    => 0,
+			'beginning_balance_dc' => 'D',
+			'ending_balance'       => 0,
+			'ending_balance_dc'    => 'D',
+			'net_change'           => 0,
+			'net_change_dc'        => 'D',
+			'operating_activities' => array(),
+			'investing_activities' => array(),
+			'financing_activities' => array(),
+			'totals'               => array(
+				'operating'    => 0,
+				'operating_dc' => 'D',
+				'investing'    => 0,
+				'investing_dc' => 'D',
+				'financing'    => 0,
+				'financing_dc' => 'D'
+			)
+		);
+
+		// --- 1. Get bank (or cash) accounts by using the ledger type flag (e.g. type==1) ---
+		$bank_ledgers = $this->Ledger->find('all', array(
+			'conditions' => array('Ledger.type' => 1)
+		));
+		$bank_ids = array();
+		$beginning_balance_total = 0;
+		foreach ($bank_ledgers as $ledger) {
+			$bank_ids[] = $ledger['Ledger']['id'];
+			// Use the Ledger model’s openingBalance() method.
+			$op = $this->Ledger->openingBalance($ledger['Ledger']['id'], $startdate);
+			// Assume that if op['dc']=='D' it is positive cash, if 'C' then negative.
+			$sign = ($op['dc'] == 'D') ? 1 : -1;
+			$beginning_balance_total += $op['amount'] * $sign;
+		}
+		$cashflow['beginning_balance'] = abs($beginning_balance_total);
+		$cashflow['beginning_balance_dc'] = ($beginning_balance_total >= 0) ? 'D' : 'C';
+
+		// --- 2. Get all entries in the period that affect these bank accounts ---
+		// We now want to pick up the "other" side of each bank transaction.
+		if (!empty($bank_ids)) {
+			$bank_entries = $this->Entry->find('all', array(
+				'conditions' => array(
+					'Entry.date >=' => $startdate,
+					'Entry.date <=' => $enddate
+				),
+				'joins' => array(
+					// Join to get the bank-side entry item(s)
+					array(
+						'table'      => 'entryitems',
+						'alias'      => 'BankItem',
+						'conditions' => array(
+							'Entry.id = BankItem.entry_id',
+							'BankItem.ledger_id IN' => $bank_ids
+						)
+					),
+					// Join to get the "other" side (non-bank) entry item(s)
+					array(
+						'table'      => 'entryitems',
+						'alias'      => 'OtherItem',
+						'conditions' => array(
+							'Entry.id = OtherItem.entry_id',
+							'OtherItem.ledger_id NOT IN' => $bank_ids
+						)
+					),
+					// Join to get details of the other ledger (especially its id, group, name and code)
+					array(
+						'table'      => 'ledgers',
+						'alias'      => 'OtherLedger',
+						'conditions' => array(
+							'OtherItem.ledger_id = OtherLedger.id'
+						)
+					)
+				),
+				'fields' => array(
+					'Entry.id', 'Entry.date',
+					'BankItem.amount', 'BankItem.dc',
+					'OtherItem.amount',
+					'OtherLedger.id', 'OtherLedger.group_id', 'OtherLedger.name', 'OtherLedger.code'
+				),
+				'order' => 'Entry.date ASC'
+			));
+		} else {
+			$bank_entries = array();
+		}
+
+		// --- 3. Process each entry and consolidate (aggregate) by ledger ---
+		// We'll build separate associative arrays keyed by OtherLedger.id.
+		$consolidated_operating = array();
+		$consolidated_investing = array();
+		$consolidated_financing = array();
+		$operating_total = 0;
+		$investing_total = 0;
+		$financing_total = 0;
+
+		foreach ($bank_entries as $entry) {
+			$other_ledger_id   = $entry['OtherLedger']['id'];
+			$other_ledger_name = $entry['OtherLedger']['name'];
+			$other_ledger_code = isset($entry['OtherLedger']['code']) ? $entry['OtherLedger']['code'] : '';
+			$amount            = $entry['OtherItem']['amount'];
+			$bank_dc           = $entry['BankItem']['dc'];
+			// If bank side is credit then cash is flowing out.
+			$is_outflow = ($bank_dc == 'C');
+			// Determine net effect: add amount if inflow, subtract if outflow.
+			$net_amount = $amount * ($is_outflow ? -1 : 1);
+
+			// Determine the classification by getting the root group of the "other" ledger.
+			$group = $this->Group->findById($entry['OtherLedger']['group_id']);
+			$root = $this->getRootGroup($group);
+			$root_id = $root['Group']['id'];
+
+			if ($root_id == 3 || $root_id == 4) {
+				// Operating activities
+				if (!isset($consolidated_operating[$other_ledger_id])) {
+					$consolidated_operating[$other_ledger_id] = array(
+						'name'   => $other_ledger_name,
+						'code'   => $other_ledger_code,
+						'amount' => 0
+					);
+				}
+				$consolidated_operating[$other_ledger_id]['amount'] += $net_amount;
+				$operating_total += $net_amount;
+			} elseif ($root_id == 1) {
+				// Investing activities
+				if (!isset($consolidated_investing[$other_ledger_id])) {
+					$consolidated_investing[$other_ledger_id] = array(
+						'name'   => $other_ledger_name,
+						'code'   => $other_ledger_code,
+						'amount' => 0
+					);
+				}
+				$consolidated_investing[$other_ledger_id]['amount'] += $net_amount;
+				$investing_total += $net_amount;
+			} elseif ($root_id == 2) {
+				// Financing activities
+				if (!isset($consolidated_financing[$other_ledger_id])) {
+					$consolidated_financing[$other_ledger_id] = array(
+						'name'   => $other_ledger_name,
+						'code'   => $other_ledger_code,
+						'amount' => 0
+					);
+				}
+				$consolidated_financing[$other_ledger_id]['amount'] += $net_amount;
+				$financing_total += $net_amount;
+			} else {
+				// Default to operating activities.
+				if (!isset($consolidated_operating[$other_ledger_id])) {
+					$consolidated_operating[$other_ledger_id] = array(
+						'name'   => $other_ledger_name,
+						'code'   => $other_ledger_code,
+						'amount' => 0
+					);
+				}
+				$consolidated_operating[$other_ledger_id]['amount'] += $net_amount;
+				$operating_total += $net_amount;
+			}
+		}
+
+		// Now convert the consolidated arrays into list format for the view,
+		// converting the net amount to an absolute value and setting the proper DC flag.
+		$cashflow['operating_activities'] = array();
+		foreach ($consolidated_operating as $ledger) {
+			$net = $ledger['amount'];
+			$entry_data = array(
+				'name'   => $ledger['name'],
+				'code'   => $ledger['code'],
+				'amount' => abs($net),
+				'dc'     => ($net >= 0) ? 'C' : 'D'
+			);
+			$cashflow['operating_activities'][] = $entry_data;
+		}
+
+		$cashflow['investing_activities'] = array();
+		foreach ($consolidated_investing as $ledger) {
+			$net = $ledger['amount'];
+			$entry_data = array(
+				'name'   => $ledger['name'],
+				'code'   => $ledger['code'],
+				'amount' => abs($net),
+				'dc'     => ($net >= 0) ? 'C' : 'D'
+			);
+			$cashflow['investing_activities'][] = $entry_data;
+		}
+
+		$cashflow['financing_activities'] = array();
+		foreach ($consolidated_financing as $ledger) {
+			$net = $ledger['amount'];
+			$entry_data = array(
+				'name'   => $ledger['name'],
+				'code'   => $ledger['code'],
+				'amount' => abs($net),
+				'dc'     => ($net >= 0) ? 'C' : 'D'
+			);
+			$cashflow['financing_activities'][] = $entry_data;
+		}
+
+		// Set totals (adjust the sign conventions as needed)
+		$cashflow['totals']['operating']  = abs($operating_total);
+		$cashflow['totals']['operating_dc'] = ($operating_total >= 0) ? 'C' : 'D';
+		$cashflow['totals']['investing']  = abs($investing_total);
+		$cashflow['totals']['investing_dc'] = ($investing_total >= 0) ? 'C' : 'D';
+		$cashflow['totals']['financing']  = abs($financing_total);
+		$cashflow['totals']['financing_dc'] = ($financing_total >= 0) ? 'C' : 'D';
+
+		$net_total = $operating_total + $investing_total + $financing_total;
+		$cashflow['net_change']    = abs($net_total);
+		$cashflow['net_change_dc'] = ($net_total >= 0) ? 'C' : 'D';
+
+		// --- 4. Calculate ending balance ---
+		if ($cashflow['beginning_balance_dc'] == 'D') {
+			$ending_total = $beginning_balance_total + $net_total;
+		} else {
+			$ending_total = -$beginning_balance_total + $net_total;
+		}
+		$cashflow['ending_balance']    = abs($ending_total);
+		$cashflow['ending_balance_dc'] = ($ending_total >= 0) ? 'D' : 'C';
+
+		$this->set('cashflow', $cashflow);
+
+		// --- 5. Handle downloads and print requests ---
+		if (isset($this->passedArgs['downloadcsv'])) {
+			Configure::write('Account.currency_format', 'none');
+			$this->layout = false;
+			$view = new View($this, false);
+			$response = $view->render('Reports/downloadcsv/cashflow');
+			$this->response->body($response);
+			$this->response->type('text/csv');
+			$this->response->download($this->_generateFilename('Cash Flow', 'csv'));
+			return $this->response;
+		}
+		if (isset($this->passedArgs['downloadxls'])) {
+			Configure::write('Account.currency_format', 'none');
+			$this->layout = 'xls';
+			$view = new View($this, false);
+			$response = $view->render('Reports/downloadxls/cashflow');
+			$this->response->body($response);
+			$this->response->type('application/vnd.ms-excel');
+			$this->response->download($this->_generateFilename('Cash Flow', 'xls'));
+			return $this->response;
+		}
+		if (isset($this->passedArgs['print'])) {
+			$this->layout = 'print';
+			$view = new View($this, false);
+			$response = $view->render('Reports/print/cashflow');
+			$this->response->body($response);
+			return $this->response;
+		}
+
+		return;
+	}
+
+	/**
+	 * Helper method that recursively finds the root group.
+	 * It assumes that a group with no parent (or a falsy parent_id) is the root.
+	 */
+	private function getRootGroup($group) {
+		if (empty($group['Group']['parent_id'])) {
+			return $group;
+		} else {
+			$parent = $this->Group->findById($group['Group']['parent_id']);
+			return $this->getRootGroup($parent);
+		}
+	}
+
+
+
+
+//
+//	public function cashflow() {
+//		$this->set('title_for_layout', __d('webzash', 'Cash Flow Statement'));
+//
+//		// Handle POST: if start/end dates are submitted, redirect with parameters.
+//		if ($this->request->is('post')) {
+//			$redirect_params = array('plugin' => 'webzash', 'controller' => 'reports', 'action' => 'cashflow');
+//			if (!empty($this->request->data['cashflow']['startdate']) || !empty($this->request->data['cashflow']['enddate'])) {
+//				$redirect_params['options'] = 1;
+//				if (!empty($this->request->data['cashflow']['startdate'])) {
+//					$redirect_params['startdate'] = $this->request->data['cashflow']['startdate'];
+//				}
+//				if (!empty($this->request->data['cashflow']['enddate'])) {
+//					$redirect_params['enddate'] = $this->request->data['cashflow']['enddate'];
+//				}
+//			}
+//			return $this->redirect($redirect_params);
+//		}
+//
+//		// Initialize dates from configuration or passed arguments.
+//		$startdate = Configure::read('Account.startdate');
+//		$enddate   = Configure::read('Account.enddate');
+//		if (!empty($this->passedArgs['options'])) {
+//			$this->set('options', true);
+//			if (!empty($this->passedArgs['startdate'])) {
+//				$startdate = dateToSQL($this->passedArgs['startdate']);
+//				$this->request->data['cashflow']['startdate'] = $this->passedArgs['startdate'];
+//			}
+//			if (!empty($this->passedArgs['enddate'])) {
+//				$enddate = dateToSQL($this->passedArgs['enddate']);
+//				$this->request->data['cashflow']['enddate'] = $this->passedArgs['enddate'];
+//			}
+//		} else {
+//			$this->set('options', false);
+//		}
+//
+//		$subtitle = __d('webzash', 'Cash Flow Statement from %s to %s',
+//			dateFromSql($startdate),
+//			dateFromSql($enddate)
+//		);
+//		$this->set('subtitle', $subtitle);
+//
+//		// Initialize the cash flow data structure.
+//		$cashflow = array(
+//			'beginning_balance'    => 0,
+//			'beginning_balance_dc' => 'D',
+//			'ending_balance'       => 0,
+//			'ending_balance_dc'    => 'D',
+//			'net_change'           => 0,
+//			'net_change_dc'        => 'D',
+//			'operating_activities' => array(),
+//			'investing_activities' => array(),
+//			'financing_activities' => array(),
+//			'totals'               => array(
+//				'operating'  => 0,
+//				'operating_dc' => 'D',
+//				'investing'  => 0,
+//				'investing_dc' => 'D',
+//				'financing'  => 0,
+//				'financing_dc' => 'D'
+//			)
+//		);
+//
+//		// --- 1. Get bank (or cash) accounts by using the ledger type flag (e.g. type==1) ---
+//		$bank_ledgers = $this->Ledger->find('all', array(
+//			'conditions' => array('Ledger.type' => 1)
+//		));
+//		$bank_ids = array();
+//		$beginning_balance_total = 0;
+//		foreach ($bank_ledgers as $ledger) {
+//			$bank_ids[] = $ledger['Ledger']['id'];
+//			// Use the Ledger model’s openingBalance() method.
+//			$op = $this->Ledger->openingBalance($ledger['Ledger']['id'], $startdate);
+//			// Assume that if op['dc']=='D' it is positive cash, if 'C' then negative.
+//			$sign = ($op['dc'] == 'D') ? 1 : -1;
+//			$beginning_balance_total += $op['amount'] * $sign;
+//		}
+//		$cashflow['beginning_balance'] = abs($beginning_balance_total);
+//		$cashflow['beginning_balance_dc'] = ($beginning_balance_total >= 0) ? 'D' : 'C';
+//
+//		// --- 2. Get all entries in the period that affect these bank accounts ---
+//		// We now want to pick up the "other" side of each bank transaction.
+//		if (!empty($bank_ids)) {
+//			$bank_entries = $this->Entry->find('all', array(
+//				'conditions' => array(
+//					'Entry.date >=' => $startdate,
+//					'Entry.date <=' => $enddate
+//				),
+//				'joins' => array(
+//					// Join to get the bank-side entry item(s)
+//					array(
+//						'table'      => 'entryitems',
+//						'alias'      => 'BankItem',
+//						'conditions' => array(
+//							'Entry.id = BankItem.entry_id',
+//							'BankItem.ledger_id IN' => $bank_ids
+//						)
+//					),
+//					// Join to get the "other" side (non-bank) entry item(s)
+//					array(
+//						'table'      => 'entryitems',
+//						'alias'      => 'OtherItem',
+//						'conditions' => array(
+//							'Entry.id = OtherItem.entry_id',
+//							'OtherItem.ledger_id NOT IN' => $bank_ids
+//						)
+//					),
+//					// Join to get details of the other ledger (especially its group)
+//					array(
+//						'table'      => 'ledgers',
+//						'alias'      => 'OtherLedger',
+//						'conditions' => array(
+//							'OtherItem.ledger_id = OtherLedger.id'
+//						)
+//					)
+//				),
+//				'fields' => array(
+//					'Entry.id', 'Entry.date',
+//					'BankItem.amount', 'BankItem.dc',
+//					'OtherItem.amount',
+//					'OtherLedger.group_id'
+//				),
+//				'order' => 'Entry.date ASC'
+//			));
+//		} else {
+//			$bank_entries = array();
+//		}
+//
+//		// --- 3. Process each entry and classify it using the root group of the “other” ledger ---
+//		$operating_total = 0;
+//		$investing_total = 0;
+//		$financing_total = 0;
+//
+//		// Example snippet from the cashflow() method in ReportsController:
+//		foreach ($bank_entries as $entry) {
+//			$other_ledger_name = $entry['OtherLedger']['name'];
+//			// Optionally, if your OtherLedger has a 'code' field:
+//			$other_ledger_code = isset($entry['OtherLedger']['code']) ? $entry['OtherLedger']['code'] : '';
+//
+//			$amount  = $entry['OtherItem']['amount'];
+//			$bank_dc = $entry['BankItem']['dc'];
+//			$is_outflow = ($bank_dc == 'C');  // Credit means cash outflow
+//
+//			// Build the entry data with name and code.
+//			$entry_data = array(
+//				'name'   => $other_ledger_name,
+//				'code'   => $other_ledger_code,
+//				'amount' => $amount,
+//				'dc'     => $is_outflow ? 'D' : 'C'
+//			);
+//
+//			// Get the group of the "other" ledger...
+//			$group = $this->Group->findById($entry['OtherLedger']['group_id']);
+//			$root = $this->getRootGroup($group);
+//			$root_id = $root['Group']['id'];
+//
+//			if ($root_id == 3 || $root_id == 4) {
+//				$cashflow['operating_activities'][] = $entry_data;
+//				$operating_total += $amount * ($is_outflow ? -1 : 1);
+//			} elseif ($root_id == 1) {
+//				$cashflow['investing_activities'][] = $entry_data;
+//				$investing_total += $amount * ($is_outflow ? -1 : 1);
+//			} elseif ($root_id == 2) {
+//				$cashflow['financing_activities'][] = $entry_data;
+//				$financing_total += $amount * ($is_outflow ? -1 : 1);
+//			} else {
+//				$cashflow['operating_activities'][] = $entry_data;
+//				$operating_total += $amount * ($is_outflow ? -1 : 1);
+//			}
+//		}
+//
+//
+//		// Set totals (note that you can adjust the sign conventions as needed)
+//		$cashflow['totals']['operating']  = abs($operating_total);
+//		$cashflow['totals']['operating_dc'] = ($operating_total >= 0) ? 'C' : 'D';
+//		$cashflow['totals']['investing']  = abs($investing_total);
+//		$cashflow['totals']['investing_dc'] = ($investing_total >= 0) ? 'C' : 'D';
+//		$cashflow['totals']['financing']  = abs($financing_total);
+//		$cashflow['totals']['financing_dc'] = ($financing_total >= 0) ? 'C' : 'D';
+//
+//		$net_total = $operating_total + $investing_total + $financing_total;
+//		$cashflow['net_change']    = abs($net_total);
+//		$cashflow['net_change_dc'] = ($net_total >= 0) ? 'C' : 'D';
+//
+//		// --- 5. Calculate ending balance ---
+//		// Here we “add” the net change to the beginning balance.
+//		if ($cashflow['beginning_balance_dc'] == 'D') {
+//			$ending_total = $beginning_balance_total + $net_total;
+//		} else {
+//			$ending_total = -$beginning_balance_total + $net_total;
+//		}
+//		$cashflow['ending_balance']    = abs($ending_total);
+//		$cashflow['ending_balance_dc'] = ($ending_total >= 0) ? 'D' : 'C';
+//
+//		$this->set('cashflow', $cashflow);
+//
+//		// --- 6. Handle downloads and print requests (unchanged from your original code) ---
+//		if (isset($this->passedArgs['downloadcsv'])) {
+//			Configure::write('Account.currency_format', 'none');
+//			$this->layout = false;
+//			$view = new View($this, false);
+//			$response = $view->render('Reports/downloadcsv/cashflow');
+//			$this->response->body($response);
+//			$this->response->type('text/csv');
+//			$this->response->download('cashflow.csv');
+//			return $this->response;
+//		}
+//		if (isset($this->passedArgs['downloadxls'])) {
+//			Configure::write('Account.currency_format', 'none');
+//			$this->layout = 'xls';
+//			$view = new View($this, false);
+//			$response = $view->render('Reports/downloadxls/cashflow');
+//			$this->response->body($response);
+//			$this->response->type('application/vnd.ms-excel');
+//			$this->response->download('cashflow.xls');
+//			return $this->response;
+//		}
+//		if (isset($this->passedArgs['print'])) {
+//			$this->layout = 'print';
+//			$view = new View($this, false);
+//			$response = $view->render('Reports/print/cashflow');
+//			$this->response->body($response);
+//			return $this->response;
+//		}
+//
+//		return;
+//	}
+//
+//	/**
+//	 * Helper method that recursively finds the root group.
+//	 * It assumes that a group with no parent (or a falsy parent_id) is the root.
+//	 */
+//	private function getRootGroup($group) {
+//		if (empty($group['Group']['parent_id'])) {
+//			return $group;
+//		} else {
+//			$parent = $this->Group->findById($group['Group']['parent_id']);
+//			return $this->getRootGroup($parent);
+//		}
+//	}
+//
+//
+//
+//
+//
+//
+
+
+
+/////////
+///
+
+
+
+
+
+
+
+
+
+//
+//	public function cashflow() {
+//		$this->set('title_for_layout', __d('webzash', 'Cash Flow Statement'));
+//
+//		// Handle POST request
+//		if ($this->request->is('post')) {
+//			$redirect_params = array('plugin' => 'webzash', 'controller' => 'reports', 'action' => 'cashflow');
+//
+//			if (!empty($this->request->data['cashflow']['startdate']) || !empty($this->request->data['cashflow']['enddate'])) {
+//				$redirect_params['options'] = 1;
+//				if (!empty($this->request->data['cashflow']['startdate'])) {
+//					$redirect_params['startdate'] = $this->request->data['cashflow']['startdate'];
+//				}
+//				if (!empty($this->request->data['cashflow']['enddate'])) {
+//					$redirect_params['enddate'] = $this->request->data['cashflow']['enddate'];
+//				}
+//			}
+//
+//			return $this->redirect($redirect_params);
+//		}
+//
+//		// Initialize dates
+//		$startdate = Configure::read('Account.startdate');
+//		$enddate = Configure::read('Account.enddate');
+//
+//		// Set options and dates if provided
+//		if (!empty($this->passedArgs['options'])) {
+//			$this->set('options', true);
+//			if (!empty($this->passedArgs['startdate'])) {
+//				$startdate = dateToSQL($this->passedArgs['startdate']);
+//				$this->request->data['cashflow']['startdate'] = $this->passedArgs['startdate'];
+//			}
+//			if (!empty($this->passedArgs['enddate'])) {
+//				$enddate = dateToSQL($this->passedArgs['enddate']);
+//				$this->request->data['cashflow']['enddate'] = $this->passedArgs['enddate'];
+//			}
+//		} else {
+//			$this->set('options', false);
+//		}
+//
+//		// Set subtitle
+//		$subtitle = __d('webzash', 'Cash Flow Statement from %s to %s',
+//			dateFromSql($startdate),
+//			dateFromSql($enddate)
+//		);
+//		$this->set('subtitle', $subtitle);
+//
+//		// Initialize cash flow data structure
+//		$cashflow = array(
+//			'beginning_balance' => 0,
+//			'beginning_balance_dc' => 'D',
+//			'ending_balance' => 0,
+//			'ending_balance_dc' => 'D',
+//			'net_change' => 0,
+//			'net_change_dc' => 'D',
+//			'operating_activities' => array(),
+//			'investing_activities' => array(),
+//			'financing_activities' => array(),
+//			'totals' => array(
+//				'operating' => 0,
+//				'operating_dc' => 'D',
+//				'investing' => 0,
+//				'investing_dc' => 'D',
+//				'financing' => 0,
+//				'financing_dc' => 'D'
+//			)
+//		);
+//
+//		// Calculate beginning balance
+//		$bank_ledger = $this->Ledger->find('first', array(
+//			'conditions' => array(
+//				'Ledger.name' => 'bank'
+//			)
+//		));
+//
+//		if ($bank_ledger) {
+//			$op = $this->Ledger->openingBalance($bank_ledger['Ledger']['id'], $startdate);
+//			$cashflow['beginning_balance'] = $op['amount'];
+//			$cashflow['beginning_balance_dc'] = $op['dc'];
+//		}
+//
+//		// Get all bank entries
+//		$bank_entries = $this->Entry->find('all', array(
+//			'conditions' => array(
+//				'Entry.date >=' => $startdate,
+//				'Entry.date <=' => $enddate
+//			),
+//			'joins' => array(
+//				array(
+//					'table' => 'entryitems',
+//					'alias' => 'BankItem',
+//					'conditions' => array(
+//						'Entry.id = BankItem.entry_id',
+//						'BankItem.ledger_id' => $bank_ledger['Ledger']['id']
+//					)
+//				),
+//				array(
+//					'table' => 'entryitems',
+//					'alias' => 'OtherItem',
+//					'conditions' => array(
+//						'Entry.id = OtherItem.entry_id',
+//						'OtherItem.ledger_id !=' => $bank_ledger['Ledger']['id']
+//					)
+//				),
+//				array(
+//					'table' => 'ledgers',
+//					'alias' => 'OtherLedger',
+//					'conditions' => array(
+//						'OtherItem.ledger_id = OtherLedger.id'
+//					)
+//				)
+//			),
+//			'fields' => array(
+//				'Entry.*',
+//				'BankItem.*',
+//				'OtherItem.*',
+//				'OtherLedger.name',
+//				'OtherLedger.group_id'
+//			),
+//			'order' => 'Entry.date ASC'
+//		));
+//
+//		// Track running totals with signs
+//		$operating_total = 0;
+//		$investing_total = 0;
+//		$financing_total = 0;
+//
+//		foreach ($bank_entries as $entry) {
+//			$other_ledger_name = $entry['OtherLedger']['name'];
+//			$amount = $entry['OtherItem']['amount'];
+//			$bank_dc = $entry['BankItem']['dc'];
+//
+//			// Determine if this is an inflow or outflow of cash
+//			$is_outflow = ($bank_dc == 'C');  // Credit to bank means cash outflow
+//
+//			// Create entry array
+//			$entry_data = array(
+//				'name' => $other_ledger_name,
+//				'amount' => $amount,
+//				'dc' => $is_outflow ? 'D' : 'C'
+//			);
+//
+//			// Get parent group
+//			$group = $this->Group->findById($entry['OtherLedger']['group_id']);
+//			$parent_id = $group['Group']['parent_id'];
+//
+//			// Operating activities (using parent groups 3 and 4)
+//			if ($parent_id == 3 || $parent_id == 4) {
+//				$cashflow['operating_activities'][] = $entry_data;
+//				$operating_total += $amount * ($is_outflow ? -1 : 1);
+//			}
+//			// Investing activities (using parent group 1 and specific groups 5,7)
+//			elseif ($parent_id == 1 && in_array($entry['OtherLedger']['group_id'], array(5, 7))) {
+//				$cashflow['investing_activities'][] = $entry_data;
+//				$investing_total += $amount * ($is_outflow ? -1 : 1);
+//			}
+//			// Financing activities (using parent group 2 and specific groups 8,10)
+//			elseif ($parent_id == 2 && in_array($entry['OtherLedger']['group_id'], array(8, 10))) {
+//				$cashflow['financing_activities'][] = $entry_data;
+//				$financing_total += $amount * ($is_outflow ? -1 : 1);
+//			}
+//		}
+//
+//		// Set totals with proper Dr/Cr
+//		$cashflow['totals']['operating'] = abs($operating_total);
+//		$cashflow['totals']['operating_dc'] = $operating_total >= 0 ? 'C' : 'D';
+//
+//		$cashflow['totals']['investing'] = abs($investing_total);
+//		$cashflow['totals']['investing_dc'] = $investing_total >= 0 ? 'C' : 'D';
+//
+//		$cashflow['totals']['financing'] = abs($financing_total);
+//		$cashflow['totals']['financing_dc'] = $financing_total >= 0 ? 'C' : 'D';
+//
+//		// Calculate net change
+//		$net_total = $operating_total + $investing_total + $financing_total;
+//		$cashflow['net_change'] = abs($net_total);
+//		$cashflow['net_change_dc'] = $net_total >= 0 ? 'C' : 'D';
+//
+//		// Calculate ending balance
+//		if ($cashflow['beginning_balance_dc'] == 'D') {
+//			$ending_total = $cashflow['beginning_balance'] + $net_total;
+//		} else {
+//			$ending_total = -$cashflow['beginning_balance'] + $net_total;
+//		}
+//
+//		$cashflow['ending_balance'] = abs($ending_total);
+//		$cashflow['ending_balance_dc'] = $ending_total >= 0 ? 'D' : 'C';
+//
+//		$this->set('cashflow', $cashflow);
+//
+//		// Handle downloads and printing
+//		if (isset($this->passedArgs['downloadcsv'])) {
+//			Configure::write('Account.currency_format', 'none');
+//			$this->layout = false;
+//			$view = new View($this, false);
+//			$response = $view->render('Reports/downloadcsv/cashflow');
+//			$this->response->body($response);
+//			$this->response->type('text/csv');
+//			$this->response->download('cashflow.csv');
+//			return $this->response;
+//		}
+//
+//		if (isset($this->passedArgs['downloadxls'])) {
+//			Configure::write('Account.currency_format', 'none');
+//			$this->layout = 'xls';
+//			$view = new View($this, false);
+//			$response = $view->render('Reports/downloadxls/cashflow');
+//			$this->response->body($response);
+//			$this->response->type('application/vnd.ms-excel');
+//			$this->response->download('cashflow.xls');
+//			return $this->response;
+//		}
+//
+//		if (isset($this->passedArgs['print'])) {
+//			$this->layout = 'print';
+//			$view = new View($this, false);
+//			$response = $view->render('Reports/print/cashflow');
+//			$this->response->body($response);
+//			return $this->response;
+//		}
+//
+//		return;
+//	}
+
 
 
 
@@ -2119,230 +2957,6 @@ class ReportsController extends WebzashAppController {
 //	}
 //
 
-
-
-	public function cashflow() {
-		$this->set('title_for_layout', __d('webzash', 'Cash Flow Statement'));
-
-		// Handle POST request
-		if ($this->request->is('post')) {
-			$redirect_params = array('plugin' => 'webzash', 'controller' => 'reports', 'action' => 'cashflow');
-
-			if (!empty($this->request->data['cashflow']['startdate']) || !empty($this->request->data['cashflow']['enddate'])) {
-				$redirect_params['options'] = 1;
-				if (!empty($this->request->data['cashflow']['startdate'])) {
-					$redirect_params['startdate'] = $this->request->data['cashflow']['startdate'];
-				}
-				if (!empty($this->request->data['cashflow']['enddate'])) {
-					$redirect_params['enddate'] = $this->request->data['cashflow']['enddate'];
-				}
-			}
-
-			return $this->redirect($redirect_params);
-		}
-
-		// Initialize dates
-		$startdate = Configure::read('Account.startdate');
-		$enddate = Configure::read('Account.enddate');
-
-		// Set options and dates if provided
-		if (!empty($this->passedArgs['options'])) {
-			$this->set('options', true);
-			if (!empty($this->passedArgs['startdate'])) {
-				$startdate = dateToSQL($this->passedArgs['startdate']);
-				$this->request->data['cashflow']['startdate'] = $this->passedArgs['startdate'];
-			}
-			if (!empty($this->passedArgs['enddate'])) {
-				$enddate = dateToSQL($this->passedArgs['enddate']);
-				$this->request->data['cashflow']['enddate'] = $this->passedArgs['enddate'];
-			}
-		} else {
-			$this->set('options', false);
-		}
-
-		// Set subtitle
-		$subtitle = __d('webzash', 'Cash Flow Statement from %s to %s',
-			dateFromSql($startdate),
-			dateFromSql($enddate)
-		);
-		$this->set('subtitle', $subtitle);
-
-		// Initialize cash flow data structure
-		$cashflow = array(
-			'beginning_balance' => 0,
-			'beginning_balance_dc' => 'D',
-			'ending_balance' => 0,
-			'ending_balance_dc' => 'D',
-			'net_change' => 0,
-			'net_change_dc' => 'D',
-			'operating_activities' => array(),
-			'investing_activities' => array(),
-			'financing_activities' => array(),
-			'totals' => array(
-				'operating' => 0,
-				'operating_dc' => 'D',
-				'investing' => 0,
-				'investing_dc' => 'D',
-				'financing' => 0,
-				'financing_dc' => 'D'
-			)
-		);
-
-		// Calculate beginning balance
-		$bank_ledger = $this->Ledger->find('first', array(
-			'conditions' => array(
-				'Ledger.name' => 'bank'
-			)
-		));
-
-		if ($bank_ledger) {
-			$op = $this->Ledger->openingBalance($bank_ledger['Ledger']['id'], $startdate);
-			$cashflow['beginning_balance'] = $op['amount'];
-			$cashflow['beginning_balance_dc'] = $op['dc'];
-		}
-
-		// Get all bank entries
-		$bank_entries = $this->Entry->find('all', array(
-			'conditions' => array(
-				'Entry.date >=' => $startdate,
-				'Entry.date <=' => $enddate
-			),
-			'joins' => array(
-				array(
-					'table' => 'entryitems',
-					'alias' => 'BankItem',
-					'conditions' => array(
-						'Entry.id = BankItem.entry_id',
-						'BankItem.ledger_id' => $bank_ledger['Ledger']['id']
-					)
-				),
-				array(
-					'table' => 'entryitems',
-					'alias' => 'OtherItem',
-					'conditions' => array(
-						'Entry.id = OtherItem.entry_id',
-						'OtherItem.ledger_id !=' => $bank_ledger['Ledger']['id']
-					)
-				),
-				array(
-					'table' => 'ledgers',
-					'alias' => 'OtherLedger',
-					'conditions' => array(
-						'OtherItem.ledger_id = OtherLedger.id'
-					)
-				)
-			),
-			'fields' => array(
-				'Entry.*',
-				'BankItem.*',
-				'OtherItem.*',
-				'OtherLedger.name',
-				'OtherLedger.group_id'
-			),
-			'order' => 'Entry.date ASC'
-		));
-
-		// Track running totals with signs
-		$operating_total = 0;
-		$investing_total = 0;
-		$financing_total = 0;
-
-		foreach ($bank_entries as $entry) {
-			$other_ledger_name = $entry['OtherLedger']['name'];
-			$amount = $entry['OtherItem']['amount'];
-			$bank_dc = $entry['BankItem']['dc'];
-
-			// Determine if this is an inflow or outflow of cash
-			$is_outflow = ($bank_dc == 'C');  // Credit to bank means cash outflow
-
-			// Create entry array
-			$entry_data = array(
-				'name' => $other_ledger_name,
-				'amount' => $amount,
-				'dc' => $is_outflow ? 'D' : 'C'
-			);
-
-			// Get parent group
-			$group = $this->Group->findById($entry['OtherLedger']['group_id']);
-			$parent_id = $group['Group']['parent_id'];
-
-			// Operating activities (using parent groups 3 and 4)
-			if ($parent_id == 3 || $parent_id == 4) {
-				$cashflow['operating_activities'][] = $entry_data;
-				$operating_total += $amount * ($is_outflow ? -1 : 1);
-			}
-			// Investing activities (using parent group 1 and specific groups 5,7)
-			elseif ($parent_id == 1 && in_array($entry['OtherLedger']['group_id'], array(5, 7))) {
-				$cashflow['investing_activities'][] = $entry_data;
-				$investing_total += $amount * ($is_outflow ? -1 : 1);
-			}
-			// Financing activities (using parent group 2 and specific groups 8,10)
-			elseif ($parent_id == 2 && in_array($entry['OtherLedger']['group_id'], array(8, 10))) {
-				$cashflow['financing_activities'][] = $entry_data;
-				$financing_total += $amount * ($is_outflow ? -1 : 1);
-			}
-		}
-
-		// Set totals with proper Dr/Cr
-		$cashflow['totals']['operating'] = abs($operating_total);
-		$cashflow['totals']['operating_dc'] = $operating_total >= 0 ? 'C' : 'D';
-
-		$cashflow['totals']['investing'] = abs($investing_total);
-		$cashflow['totals']['investing_dc'] = $investing_total >= 0 ? 'C' : 'D';
-
-		$cashflow['totals']['financing'] = abs($financing_total);
-		$cashflow['totals']['financing_dc'] = $financing_total >= 0 ? 'C' : 'D';
-
-		// Calculate net change
-		$net_total = $operating_total + $investing_total + $financing_total;
-		$cashflow['net_change'] = abs($net_total);
-		$cashflow['net_change_dc'] = $net_total >= 0 ? 'C' : 'D';
-
-		// Calculate ending balance
-		if ($cashflow['beginning_balance_dc'] == 'D') {
-			$ending_total = $cashflow['beginning_balance'] + $net_total;
-		} else {
-			$ending_total = -$cashflow['beginning_balance'] + $net_total;
-		}
-
-		$cashflow['ending_balance'] = abs($ending_total);
-		$cashflow['ending_balance_dc'] = $ending_total >= 0 ? 'D' : 'C';
-
-		$this->set('cashflow', $cashflow);
-
-		// Handle downloads and printing
-		if (isset($this->passedArgs['downloadcsv'])) {
-			Configure::write('Account.currency_format', 'none');
-			$this->layout = false;
-			$view = new View($this, false);
-			$response = $view->render('Reports/downloadcsv/cashflow');
-			$this->response->body($response);
-			$this->response->type('text/csv');
-			$this->response->download('cashflow.csv');
-			return $this->response;
-		}
-
-		if (isset($this->passedArgs['downloadxls'])) {
-			Configure::write('Account.currency_format', 'none');
-			$this->layout = 'xls';
-			$view = new View($this, false);
-			$response = $view->render('Reports/downloadxls/cashflow');
-			$this->response->body($response);
-			$this->response->type('application/vnd.ms-excel');
-			$this->response->download('cashflow.xls');
-			return $this->response;
-		}
-
-		if (isset($this->passedArgs['print'])) {
-			$this->layout = 'print';
-			$view = new View($this, false);
-			$response = $view->render('Reports/print/cashflow');
-			$this->response->body($response);
-			return $this->response;
-		}
-
-		return;
-	}
 
 
 }
