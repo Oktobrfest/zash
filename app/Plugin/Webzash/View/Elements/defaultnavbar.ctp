@@ -33,8 +33,7 @@
 						<li><?php echo '<li>' . $this->Html->link(__d('webzash', 'Ledger Statement'), array('plugin' => 'webzash', 'controller' => 'reports', 'action' => 'ledgerstatement')); ?></li>
 						<li><?php echo '<li>' . $this->Html->link(__d('webzash', 'Ledger Entries'), array('plugin' => 'webzash', 'controller' => 'reports', 'action' => 'ledgerentries')); ?></li>
 						<li><?php echo '<li>' . $this->Html->link(__d('webzash', 'Reconciliation'), array('plugin' => 'webzash', 'controller' => 'reports', 'action' => 'reconciliation')); ?></li>
-<!--						<li>--><?php //echo $this->Html->link(__d('webzash', 'Cash Flow'), array('plugin' => 'webzash', 'controller' => 'reports', 'action' => 'cashflow')); ?><!--</li>-->
-						<li><?php echo $this->Html->link(__d('webzash', 'Cash Flow'), array('plugin' => 'webzash', 'controller' => 'reports', 'action' => 'cashflow2')); ?></li>
+						<li><?php echo $this->Html->link(__d('webzash', 'Cash Flow'), array('plugin' => 'webzash', 'controller' => 'reports', 'action' => 'cashflow')); ?></li>
 					</ul>
 				</li>
 				<li><?php echo $this->Html->link(__d('webzash', 'Search'), array('plugin' => 'webzash', 'controller' => 'search', 'action' => 'index')); ?></li>
