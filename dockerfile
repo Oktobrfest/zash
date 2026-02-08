@@ -1,34 +1,26 @@
 FROM php:7.2-apache
 
+# point apt to buster archive AND disable Valid-Until checks (archive metadata is expired)
+RUN echo "deb http://archive.debian.org/debian buster main" > /etc/apt/sources.list \
+    && echo "deb http://archive.debian.org/debian-security buster/updates main" >> /etc/apt/sources.list \
+    && printf 'Acquire::Check-Valid-Until "false";\n' > /etc/apt/apt.conf.d/99no-check-valid
+  
 # Install necessary extensions and dependencies
-RUN apt-get update && apt-get install -y \
-    git \
+RUN apt-get update --allow-releaseinfo-change \
+    && apt-get install -y --no-install-recommends \
     zip \
     unzip \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
-    sudo \
     less \
     bash-completion \
     procps \
     curl \
+    && rm -rf /var/lib/apt/lists/* \
     && docker-php-ext-install mysqli pdo pdo_mysql bcmath \
     && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
     && docker-php-ext-install gd
-
-# Install Xdebug
-RUN pecl install xdebug-2.9.8 \
-    && docker-php-ext-enable xdebug
-
-# Configure Xdebug for remote debugging
-# RUN echo "xdebug.remote_enable=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-#     && echo "xdebug.remote_autostart=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-#     && echo "xdebug.remote_host=host.docker.internal" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-#     && echo "xdebug.remote_port=9000" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
-
-# COPY ./config/xdebug.ini /usr/local/etc/php/conf.d/
-
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
