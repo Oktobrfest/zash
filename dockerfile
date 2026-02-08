@@ -31,8 +31,7 @@ RUN composer require asgrim/ofxparser
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-# Set the document root to /var/www/html/app/webroot
-ENV APACHE_DOCUMENT_ROOT /app/webroot
+ENV APACHE_DOCUMENT_ROOT /var/www/html/app/webroot
 
 # Update Apache configuration
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
@@ -44,6 +43,7 @@ WORKDIR /var/www/html
 # NOTE: UNDO-THIS FOR DEV
 # For prod: 
 COPY ./app/apache-config/default.conf /etc/apache2/sites-available/000-default.conf
+COPY . /var/www/html
 
 # Add your user (UID 1000) to the container
 RUN useradd -u 1000 -m z
