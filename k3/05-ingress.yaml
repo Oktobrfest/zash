@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: accounting-ingress
+  namespace: accounting
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+# AUTH FIRST, THEN HTTPS HEADERS
+    traefik.ingress.kubernetes.io/router.middlewares: accounting-ak-forward-auth@kubernetescrd,accounting-accounting-forwarded-https@kubernetescrd
+spec:
+  ingressClassName: traefik
+  tls:
+  - hosts:
+    - accounting.dosomereps.com
+  rules:
+    - host: accounting.dosomereps.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: accounting-service
+                port:
+                  number: 80

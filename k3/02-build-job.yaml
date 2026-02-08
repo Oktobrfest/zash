@@ -1,0 +1,70 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: accounting-build
+  namespace: accounting
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      restartPolicy: Never
+      dnsPolicy: Default
+
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              # FORCE run on local AMD/Intel nodes only
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - saron
+                - asus
+
+      containers:
+        - name: kaniko
+          image: gcr.io/kaniko-project/executor:v1.24.0
+          env:
+            - name: DOCKER_CONFIG
+              value: /kaniko/.docker
+          args:
+            - --context=https://codeload.github.com/Oktobrfest/zash/tar.gz/refs/heads/master          
+            - --destination=docker.io/oktobrfest/zash:latest
+            - --dockerfile=dockerfile
+            - --cache=false
+            - --context-sub-path=zash-master
+
+            # Optimize for local build speed
+            - --compressed-caching=false
+            - --snapshot-mode=time
+            - --verbosity=info
+            - --log-format=text
+            - --log-timestamp
+            - --push-retry=5 
+            - --registry-mirror=mirror.gcr.io
+
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "4000m"
+              memory: "5Gi"
+
+          volumeMounts:
+            - name: docker-config
+              mountPath: /kaniko/.docker/
+            - name: kaniko-cache
+              mountPath: /kaniko/cache
+  
+      volumes:
+        - name: docker-config
+          secret:
+            secretName: regcred
+            items:
+              - key: .dockerconfigjson
+                path: config.json
+        - name: kaniko-cache
+          emptyDir:
+            sizeLimit: 10Gi

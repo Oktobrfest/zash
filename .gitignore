@@ -95,3 +95,5 @@ app/Config/webzash.php
 temp/
 backup/
 get-pip.py
+k3/01-secrets.yaml
+k3/docker-hub-secret.yaml

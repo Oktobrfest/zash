@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: accounting-db
+  namespace: accounting
+  labels:
+    app: accounting-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: accounting-db
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: accounting-db
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - jackie
+      containers:
+      - name: mysql
+        image: mysql:5.7
+        args:
+          - "--ignore-db-dir=lost+found"
+        env:
+          - name: MYSQL_DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: accounting-secrets
+                key: MYSQL_DATABASE
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: accounting-secrets
+                key: MYSQL_USER
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: accounting-secrets
+                key: MYSQL_PASSWORD
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: accounting-secrets
+                key: MYSQL_ROOT_PASSWORD
+        ports:
+          - containerPort: 3306
+            name: mysql
+        volumeMounts:
+          - name: db-data
+            mountPath: /var/lib/mysql
+      volumes:
+      - name: db-data
+        persistentVolumeClaim:
+          claimName: accounting-db-data
