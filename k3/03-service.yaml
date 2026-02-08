@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: accounting-service
+  namespace: accounting
+spec:
+  selector:
+    app: accounting
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: accounting-db
+  namespace: accounting
+spec:
+  selector:
+    app: accounting-db
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306

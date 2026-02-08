@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: accounting
+  namespace: accounting
+  labels:
+    app: accounting
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: accounting
+  template:
+    metadata:
+      labels:
+        app: accounting
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - jackie
+      containers:
+      - name: accounting
+        image: docker.io/oktobrfest/zash:latest
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 80
+            name: http
+        env:
+          # Database Connection Info
+          - name: MYSQL_DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: accounting-secrets
+                key: MYSQL_DATABASE
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: accounting-secrets
+                key: MYSQL_USER
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: accounting-secrets
+                key: MYSQL_PASSWORD
+          - name: DB_HOST
+            value: "accounting-db"
+          # Apache / PHP Configs
+          - name: APACHE_DOCUMENT_ROOT
+            value: "/var/www/html/app/webroot"
+          - name: PHP_IDE_CONFIG
+            value: "serverName=localhost"

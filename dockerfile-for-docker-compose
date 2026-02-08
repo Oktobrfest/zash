@@ -49,10 +49,6 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 # Set working directory
 WORKDIR /var/www/html
 
-# NOTE: UNDO-THIS FOR DEV
-# For prod: 
-COPY ./app/apache-config/default.conf /etc/apache2/sites-available/000-default.conf
-
 # Add your user (UID 1000) to the container
 RUN useradd -u 1000 -m z
 

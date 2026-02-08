@@ -1,0 +1,44 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-traefik-only
+  namespace: accounting
+spec:
+  podSelector:
+    matchLabels:
+      app: accounting
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: kube-system
+        podSelector:
+          matchLabels:
+            app.kubernetes.io/name: traefik
+      ports:
+        - protocol: TCP
+          port: 80
+  egress:
+    - ports:
+      - port: 53
+        protocol: UDP
+      - port: 53
+        protocol: TCP
+      - port: 443
+        protocol: TCP
+      - port: 80
+        protocol: TCP
+        # allow app -> mysql inside namespace
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: accounting
+          podSelector:
+            matchLabels:
+              app: accounting-db
+      ports:
+        - port: 3306
+          protocol: TCP
