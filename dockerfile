@@ -2,13 +2,11 @@ FROM php:7.2-apache
 
 # Install necessary extensions and dependencies
 RUN apt-get update && apt-get install -y \
-    git \
     zip \
     unzip \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
-    sudo \
     less \
     bash-completion \
     procps \
@@ -16,19 +14,6 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install mysqli pdo pdo_mysql bcmath \
     && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
     && docker-php-ext-install gd
-
-# Install Xdebug
-RUN pecl install xdebug-2.9.8 \
-    && docker-php-ext-enable xdebug
-
-# Configure Xdebug for remote debugging
-# RUN echo "xdebug.remote_enable=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-#     && echo "xdebug.remote_autostart=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-#     && echo "xdebug.remote_host=host.docker.internal" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-#     && echo "xdebug.remote_port=9000" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
-
-# COPY ./config/xdebug.ini /usr/local/etc/php/conf.d/
-
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
