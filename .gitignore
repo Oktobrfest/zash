@@ -91,3 +91,7 @@ node_modules/
 /build.properties
 app/Config/webzash.php
 /myvenv/
+
+temp/
+backup/
+get-pip.py

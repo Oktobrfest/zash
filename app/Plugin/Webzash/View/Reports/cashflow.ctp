@@ -97,7 +97,7 @@
 
 	echo $this->Html->link(__d('webzash', 'PRINT'), '',
 		array(
-			'class' => 'btn btn-default btn-sm',
+			'class' => 'btn btn-default btn-sm no-print',
 			'onClick' => "window.open('" . $this->Html->url('/' . $this->params->url . '/print:true') . "', 'windowname','toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,copyhistory=no,width=1000,height=600'); return false;"
 		)
 	);

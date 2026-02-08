@@ -422,3 +422,9 @@ div.kb-shorcuts:hover {
 .alert-text {
 	color: #9E2424;
 }
+
+@media print {
+	.hide-print {
+		display: none !important;
+	}
+}
