@@ -1,7 +1,13 @@
 FROM php:7.2-apache
 
+# point apt to buster archive AND disable Valid-Until checks (archive metadata is expired)
+RUN echo "deb http://archive.debian.org/debian buster main" > /etc/apt/sources.list \
+    && echo "deb http://archive.debian.org/debian-security buster/updates main" >> /etc/apt/sources.list \
+    && printf 'Acquire::Check-Valid-Until "false";\n' > /etc/apt/apt.conf.d/99no-check-valid
+  
 # Install necessary extensions and dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update --allow-releaseinfo-change \
+    && apt-get install -y --no-install-recommends \
     zip \
     unzip \
     libpng-dev \
@@ -11,6 +17,7 @@ RUN apt-get update && apt-get install -y \
     bash-completion \
     procps \
     curl \
+    && rm -rf /var/lib/apt/lists/* \
     && docker-php-ext-install mysqli pdo pdo_mysql bcmath \
     && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
     && docker-php-ext-install gd
