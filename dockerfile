@@ -20,14 +20,6 @@ RUN apt-get update --allow-releaseinfo-change \
     && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
     && docker-php-ext-install gd
 
-
-# Install Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-# Install OfxParser
-RUN composer require asgrim/ofxparser
-
-
 ENV APACHE_DOCUMENT_ROOT /var/www/html/app/webroot
 
 RUN a2enmod rewrite \
@@ -44,10 +36,9 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Install OfxParser
 RUN composer require asgrim/ofxparser
 
-# CakePHP core is expected at /var/www/html/app/lib/Cake, but it is gitignored and missing from GitHub build context
 RUN set -eux; \
     mkdir -p /var/www/html/app/lib; \
-    curl -fsSL -o /tmp/cakephp.zip https://github.com/cakephp/cakephp/zipball/2.5.6; \
+    curl -fsSL -o /tmp/cakephp.zip https://github.com/cakephp/cakephp/zipball/2.10.24; \
     unzip -q /tmp/cakephp.zip -d /tmp; \
     CAKE_DIR="$(ls -d /tmp/cakephp-cakephp-* | head -n 1)"; \
     rm -rf /var/www/html/app/lib/Cake; \
