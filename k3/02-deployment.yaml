@@ -55,3 +55,16 @@ spec:
             value: "/var/www/html/app/webroot"
           - name: PHP_IDE_CONFIG
             value: "serverName=localhost"
+
+        volumeMounts:
+          - name: db-config-vol
+            mountPath: /var/www/html/app/Config/database.php
+            subPath: database.php
+
+      volumes:
+        - name: db-config-vol
+          secret:
+            secretName: zash-db-config
+            items:
+              - key: database.php
+                path: database.php

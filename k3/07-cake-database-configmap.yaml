@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: zash-db-config
+  namespace: accounting
+type: Opaque
+stringData:
+  database.php: |
+    <?php
+    class DATABASE_CONFIG {
+        public $default = array(
+            'datasource' => 'Database/Mysql',
+            'persistent' => false,
+            'host' => 'accounting-db',
+            'login' => '',
+            'password' => 'HIDDEN',
+            'database' => '',
+            'prefix' => '',
+            'encoding' => 'utf8',
+        );
+
+        public function __construct() {
+            $this->default['host'] = getenv('DB_HOST') ?: 'accounting-db';
+            $this->default['login'] = getenv('MYSQL_USER') ?: 'zashdbuser';
+            $this->default['password'] = getenv('MYSQL_PASSWORD');
+            $this->default['database'] = getenv('MYSQL_DATABASE') ?: 'webzashdb';
+        }
+    }

@@ -12,6 +12,7 @@
 !/app/webroot/index.php
 !/app/webroot/uploads/
 !/app/webroot/uploads/.gitkeep
+!/app/webroot/.htaccess
 
 # Cache can be ignored
 /app/webroot/cache/*
