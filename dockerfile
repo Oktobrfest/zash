@@ -64,8 +64,8 @@ RUN set -eux; \
 # CakePHP needs tmp/ + logs/ writable 
 RUN set -eux; \
     mkdir -p /var/www/html/app/tmp /var/www/html/app/logs; \
-    chown -R www-data:www-data /var/www/html/app/tmp /var/www/html/app/logs; \
-    chmod -R 775 /var/www/html/app/tmp /var/www/html/app/logs
+    chown -R www-data:www-data /var/www/html/app/tmp /var/www/html/app/logs /var/www/html/app/Config; \
+    chmod -R 775 /var/www/html/app/tmp /var/www/html/app/logs /var/www/html/app/Config
 
 EXPOSE 80
 CMD ["apache2-foreground"]
