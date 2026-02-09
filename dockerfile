@@ -43,6 +43,12 @@ RUN set -eux; \
     CAKE_DIR="$(ls -d /tmp/cakephp-cakephp-* | head -n 1)"; \
     rm -rf /var/www/html/app/lib/Cake; \
     mv "${CAKE_DIR}/lib/Cake" /var/www/html/app/lib/Cake; \
+    for d in Console Lib Locale Model Test Vendor View; do \
+      if [ -d "${CAKE_DIR}/app/${d}" ]; then \
+        cp -rn "${CAKE_DIR}/app/${d}" /var/www/html/app/ 2>/dev/null || true; \
+      fi; \
+    done; \
+    
     rm -rf /tmp/cakephp.zip "${CAKE_DIR}"
 
 # Webzash expects BoostCake plugin; 
