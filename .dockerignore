@@ -1,0 +1,10 @@
+.env
+.env.*
+temp/
+backup/
+k3/
+.git/
+.idea/
+.vscode/
+*.sql
+*.sql.gz
