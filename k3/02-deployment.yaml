@@ -60,6 +60,9 @@ spec:
           - name: db-config-vol
             mountPath: /var/www/html/app/Config/database.php
             subPath: database.php
+          - name: db-config-vol
+            mountPath: /var/www/html/app/Config/webzash.php
+            subPath: webzash.php
 
       volumes:
         - name: db-config-vol
@@ -68,3 +71,5 @@ spec:
             items:
               - key: database.php
                 path: database.php
+              - key: webzash.php
+                path: webzash.php

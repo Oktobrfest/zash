@@ -5,10 +5,34 @@ metadata:
   namespace: accounting
 type: Opaque
 stringData:
+  webzash.php: |
+    <?php
+    $wz['datasource'] = 'Database/Mysql';
+    $wz['database'] = 'webzash';
+    $wz['host'] = getenv('DB_HOST');
+    $wz['port'] = '3306';
+    $wz['login'] = getenv('MYSQL_USER');
+    $wz['password'] = getenv('MYSQL_PASSWORD');
+    $wz['prefix'] = '';
+    $wz['encoding'] = 'utf8';
+    $wz['persistent'] = '';
+    ?>
+
   database.php: |
     <?php
     class DATABASE_CONFIG {
         public $default = array(
+            'datasource' => 'Database/Mysql',
+            'persistent' => false,
+            'host' => 'accounting-db',
+            'login' => '',
+            'password' => 'HIDDEN',
+            'database' => 'webzash',
+            'prefix' => '',
+            'encoding' => 'utf8',
+        );
+
+        public $pmgh = array(
             'datasource' => 'Database/Mysql',
             'persistent' => false,
             'host' => 'accounting-db',
@@ -23,6 +47,10 @@ stringData:
             $this->default['host'] = getenv('DB_HOST') ?: 'accounting-db';
             $this->default['login'] = getenv('MYSQL_USER') ?: 'zashdbuser';
             $this->default['password'] = getenv('MYSQL_PASSWORD');
-            $this->default['database'] = getenv('MYSQL_DATABASE') ?: 'webzashdb';
+
+            $this->pmgh['host'] = getenv('DB_HOST') ?: 'accounting-db';
+            $this->pmgh['login'] = getenv('MYSQL_USER') ?: 'zashdbuser';
+            $this->pmgh['password'] = getenv('MYSQL_PASSWORD');
+            $this->pmgh['database'] = getenv('MYSQL_DATABASE') ?: 'webzashdb';
         }
     }

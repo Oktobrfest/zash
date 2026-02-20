@@ -64,6 +64,8 @@ RUN set -eux; \
 # CakePHP needs tmp/ + logs/ writable 
 RUN set -eux; \
     mkdir -p /var/www/html/app/tmp /var/www/html/app/logs; \
+    ln -sf /dev/stderr /var/www/html/app/logs/error.log; \
+    ln -sf /dev/stdout /var/www/html/app/logs/debug.log; \
     chown -R www-data:www-data /var/www/html/app/tmp /var/www/html/app/logs /var/www/html/app/Config; \
     chmod -R 775 /var/www/html/app/tmp /var/www/html/app/logs /var/www/html/app/Config
 
